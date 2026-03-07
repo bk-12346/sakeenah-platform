@@ -10,8 +10,11 @@ interface Props {
 export default function ResponseScreen({ entry, onNewEntry, onViewJournal }: Props) {
   return (
     <div className="animate-fade-in">
-      <div className="bg-card rounded-lg p-5 border border-border">
-        <p className="text-xs text-muted-foreground leading-relaxed mb-2">{entry.thought}</p>
+      <div
+        className="bg-card rounded-lg border border-border border-l-[3px] border-l-primary"
+        style={{ padding: '28px', boxShadow: '0 4px 24px rgba(28, 35, 64, 0.06)' }}
+      >
+        <p className="text-xs text-muted-foreground mb-2" style={{ lineHeight: '1.8' }}>{entry.thought}</p>
         {entry.emotions.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
             {entry.emotions.map((e) => (
@@ -19,7 +22,7 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal }: Pro
             ))}
           </div>
         )}
-        <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
+        <div className="prose prose-sm max-w-none text-foreground" style={{ lineHeight: '1.8' }}>
           <ReactMarkdown>{entry.response}</ReactMarkdown>
         </div>
       </div>

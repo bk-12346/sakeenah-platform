@@ -50,7 +50,7 @@ const Index = () => {
       </header>
 
       {/* Content */}
-      <main className="max-w-[420px] mx-auto px-5 py-6">
+      <main className="max-w-[420px] mx-auto px-5 py-7">
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
