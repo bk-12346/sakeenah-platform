@@ -1,1 +1,4 @@
 project_id = "mqdhvfojdutetaizkrld"
+
+[functions.sakeena-reflect]
+verify_jwt = false
