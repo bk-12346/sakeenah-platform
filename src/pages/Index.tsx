@@ -24,7 +24,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm" style={{ borderBottom: '1px solid #E8E3DC' }}>
         <div className="max-w-[420px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div>
