@@ -114,10 +114,10 @@ export default function HomeScreen({ onResponse }: Props) {
       <textarea
         value={thought}
         onChange={(e) => e.target.value.length <= MAX_CHARS && setThought(e.target.value)}
-        placeholder="Write your thoughts here..."
+        placeholder="What is on your heart today..."
         rows={5}
-        className="w-full bg-card border border-border rounded-lg p-4 text-sm font-body resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-        style={{ lineHeight: '1.8' }}
+        className="w-full rounded-lg p-4 text-sm font-body resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
+        style={{ lineHeight: '1.8', background: '#FFFFFF', border: '1px solid #E8E3DC', minHeight: '160px' }}
       />
       <p className={`text-xs mt-1 text-right ${remaining < 30 ? "text-destructive" : "text-muted-foreground"}`}>
         {remaining} characters remaining
