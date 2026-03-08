@@ -28,7 +28,7 @@ const Index = () => {
         <div className="max-w-[420px] mx-auto px-5 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-display text-lg font-semibold leading-none">Sakeena</h1>
+              <h1 className="font-display text-[26px] italic font-semibold leading-none">Sakeena</h1>
               <p className="text-[10px] text-muted-foreground mt-0.5">A quiet space for your thoughts.</p>
             </div>
             <nav className="flex gap-4 text-xs font-medium">
