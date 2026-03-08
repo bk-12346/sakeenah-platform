@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { saveEntry, type JournalEntry } from "@/lib/storage";
+import { externalSupabase } from "@/lib/supabase-external";
+import { getSessionId } from "@/lib/session";
+import { type JournalEntry } from "@/lib/storage";
 
 const EMOTIONS = [
   "Anxious", "Worried", "Happy", "Grateful", "Sad",
@@ -27,7 +29,42 @@ export default function HomeScreen({ onResponse }: Props) {
     setLoading(true);
     setError("");
 
+    const sessionId = getSessionId();
+
     try {
+      // Check global daily usage
+      const { data: globalUsage, error: globalErr } = await externalSupabase
+        .from("daily_global_usage")
+        .select("total_calls")
+        .single();
+
+      if (globalErr && globalErr.code !== "PGRST116") throw globalErr;
+
+      if (globalUsage && globalUsage.total_calls >= 200) {
+        setError("Sakeena is resting for today. Come back tomorrow — rest is part of tawakkul.");
+        setLoading(false);
+        return;
+      }
+
+      // Check per-session daily usage
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const { count, error: sessionErr } = await externalSupabase
+        .from("usage_log")
+        .select("*", { count: "exact", head: true })
+        .eq("session_id", sessionId)
+        .gte("created_at", todayStart.toISOString());
+
+      if (sessionErr) throw sessionErr;
+
+      if ((count ?? 0) >= 10) {
+        setError("You have reached today's reflection limit. Come back tomorrow — rest is part of tawakkul.");
+        setLoading(false);
+        return;
+      }
+
+      // Make AI call
       const userMessage = `Journal entry: ${thought.trim()}\n\nEmotion labels: ${emotions.length ? emotions.join(", ") : "None provided"}`;
 
       const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect", {
@@ -38,6 +75,19 @@ export default function HomeScreen({ onResponse }: Props) {
 
       const responseText = data?.response || data?.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
 
+      // Save entry to external Supabase
+      const { error: insertErr } = await externalSupabase.from("entries").insert({
+        session_id: sessionId,
+        entry_text: thought.trim(),
+        emotion_labels: emotions,
+        ai_response: responseText,
+      });
+
+      if (insertErr) throw insertErr;
+
+      // Log usage
+      await externalSupabase.from("usage_log").insert({ session_id: sessionId });
+
       const entry: JournalEntry = {
         id: crypto.randomUUID(),
         thought: thought.trim(),
@@ -45,7 +95,7 @@ export default function HomeScreen({ onResponse }: Props) {
         response: responseText,
         createdAt: new Date().toISOString(),
       };
-      saveEntry(entry);
+
       onResponse(entry);
     } catch {
       setError("Something went wrong. Please try again.");
