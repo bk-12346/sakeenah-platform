@@ -87,14 +87,18 @@
 
 @layer components {
   .chip {
-    @apply px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer select-none border border-transparent;
-    background: #F0EDE8;
+    @apply py-1.5 rounded-full font-medium cursor-pointer select-none;
+    padding-left: 16px;
+    padding-right: 16px;
+    font-size: 13px;
+    background: #FFFFFF;
+    border: 1px solid #D6D0C8;
     color: hsl(var(--foreground));
     transition: all 0.2s ease;
   }
 
   .chip:hover {
-    background: #E8E4DD;
+    background: #F5F3F0;
   }
 
   .chip-active {

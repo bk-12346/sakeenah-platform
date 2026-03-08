@@ -57,10 +57,10 @@ export default function JournalScreen() {
       {entries.map((entry) => {
         const isOpen = expanded === entry.id;
         return (
-          <div key={entry.id} className="bg-card rounded-lg border border-border overflow-hidden">
+          <div key={entry.id} className="rounded-lg overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E8E3DC' }}>
             <button
               onClick={() => setExpanded(isOpen ? null : entry.id)}
-              className="w-full p-4 text-left flex items-start justify-between gap-3"
+              className="w-full text-left flex items-start justify-between gap-3" style={{ padding: '20px' }}
             >
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">
@@ -78,7 +78,7 @@ export default function JournalScreen() {
               {isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-1" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />}
             </button>
             {isOpen && (
-              <div className="px-4 pb-4 border-t border-border pt-3">
+              <div className="border-t pt-3" style={{ borderColor: '#E8E3DC', padding: '20px', paddingTop: '12px' }}>
                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{entry.entry_text}</p>
                 <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
                   <ReactMarkdown>{entry.ai_response}</ReactMarkdown>

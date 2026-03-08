@@ -109,15 +109,15 @@ export default function HomeScreen({ onResponse }: Props) {
   return (
     <div className="animate-fade-in pt-10">
 
-      <h2 className="font-display text-2xl mb-7">What's on your mind?</h2>
+      <h2 className="font-display text-[32px] mb-7">What's on your mind?</h2>
 
       <textarea
         value={thought}
         onChange={(e) => e.target.value.length <= MAX_CHARS && setThought(e.target.value)}
-        placeholder="Write your thoughts here..."
+        placeholder="What is on your heart today..."
         rows={5}
-        className="w-full bg-card border border-border rounded-lg p-4 text-sm font-body resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-        style={{ lineHeight: '1.8' }}
+        className="w-full rounded-lg p-4 text-sm font-body resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
+        style={{ lineHeight: '1.8', background: '#FFFFFF', border: '1px solid #E8E3DC', minHeight: '160px' }}
       />
       <p className={`text-xs mt-1 text-right ${remaining < 30 ? "text-destructive" : "text-muted-foreground"}`}>
         {remaining} characters remaining
@@ -139,6 +139,7 @@ export default function HomeScreen({ onResponse }: Props) {
         onClick={submit}
         disabled={!thought.trim() || loading}
         className="w-full mt-7 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+        style={(!thought.trim() || loading) ? {} : { backgroundColor: '#6B9970' }}
       >
         {loading ? (
           <span className="animate-pulse-soft">Reflecting...</span>
