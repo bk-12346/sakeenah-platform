@@ -25,7 +25,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Nav */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-[420px] mx-auto px-5 py-3">
+        <div className="max-w-[420px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-[26px] italic font-semibold leading-none">Sakeena</h1>
