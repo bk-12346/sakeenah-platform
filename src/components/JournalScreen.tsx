@@ -38,49 +38,73 @@ export default function JournalScreen() {
 
   if (loading) {
     return (
-      <div className="animate-fade-in text-center py-12">
-        <p className="text-muted-foreground text-sm">Loading entries...</p>
+      <div className="animate-fade-in text-center py-12 pt-[36px]">
+        <p className="text-sm" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>Loading entries...</p>
       </div>
     );
   }
 
   if (entries.length === 0) {
     return (
-      <div className="animate-fade-in text-center py-12">
-        <p className="text-muted-foreground text-sm">No entries yet. Start by writing your first thought.</p>
+      <div className="animate-fade-in text-center py-12 pt-[36px]">
+        <p className="text-sm" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>No entries yet. Start by writing your first thought.</p>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in space-y-3">
+    <div className="animate-fade-in space-y-3 pt-[36px]">
       {entries.map((entry) => {
         const isOpen = expanded === entry.id;
         return (
-          <div key={entry.id} className="rounded-lg overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E8E3DC' }}>
+          <div
+            key={entry.id}
+            className="overflow-hidden"
+            style={{
+              background: '#FFFAF7',
+              border: '1px solid #F0E0D4',
+              borderRadius: '18px',
+              boxShadow: '0 2px 14px rgba(44, 24, 16, 0.05)',
+            }}
+          >
             <button
               onClick={() => setExpanded(isOpen ? null : entry.id)}
-              className="w-full text-left flex items-start justify-between gap-3" style={{ padding: '20px' }}
+              className="w-full text-left flex items-start justify-between gap-3"
+              style={{ padding: '20px' }}
             >
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground mb-1">
+                <p className="text-xs mb-1" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>
                   {format(new Date(entry.created_at), "MMM d, yyyy · h:mm a")}
                 </p>
                 {entry.emotion_labels && entry.emotion_labels.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-1.5">
                     {entry.emotion_labels.map((e) => (
-                      <span key={e} className="chip chip-active text-[10px] px-2 py-0.5">{e}</span>
+                      <span key={e} className="chip chip-active chip-active-rose text-[10px] px-2 py-0.5">{e}</span>
                     ))}
                   </div>
                 )}
-                <p className="text-sm truncate">{entry.entry_text.slice(0, 80)}{entry.entry_text.length > 80 ? "..." : ""}</p>
+                <p className="text-sm truncate" style={{ color: '#2C1810' }}>
+                  {entry.entry_text.slice(0, 80)}{entry.entry_text.length > 80 ? "..." : ""}
+                </p>
               </div>
-              {isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-1" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />}
+              {isOpen
+                ? <ChevronUp className="w-4 h-4 shrink-0 mt-1" style={{ color: 'rgba(44, 24, 16, 0.45)' }} />
+                : <ChevronDown className="w-4 h-4 shrink-0 mt-1" style={{ color: 'rgba(44, 24, 16, 0.45)' }} />
+              }
             </button>
             {isOpen && (
-              <div className="border-t pt-3" style={{ borderColor: '#E8E3DC', padding: '20px', paddingTop: '12px' }}>
-                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{entry.entry_text}</p>
-                <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
+              <div style={{ borderTop: '1px solid #F0E0D4', padding: '20px', paddingTop: '12px' }}>
+                <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>{entry.entry_text}</p>
+                <div
+                  className="prose prose-sm max-w-none leading-relaxed font-body"
+                  style={{
+                    color: '#2C1810',
+                    borderLeft: '2px solid #C17C74',
+                    paddingLeft: '14px',
+                    fontSize: '15px',
+                    lineHeight: '1.85',
+                  }}
+                >
                   <ReactMarkdown>{entry.ai_response}</ReactMarkdown>
                 </div>
               </div>

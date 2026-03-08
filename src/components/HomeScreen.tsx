@@ -8,6 +8,9 @@ const EMOTIONS = [
   "Anxious", "Worried", "Happy", "Grateful", "Sad",
   "Angry", "Confused", "Hopeful", "Stressed", "Peaceful",
 ];
+
+const TERRACOTTA_EMOTIONS = ["Worried", "Angry", "Stressed", "Confused"];
+
 const MAX_CHARS = 250;
 
 interface Props {
@@ -19,6 +22,7 @@ export default function HomeScreen({ onResponse }: Props) {
   const [emotions, setEmotions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
 
   const toggleEmotion = (e: string) => {
     setEmotions((prev) => prev.includes(e) ? prev.filter((x) => x !== e) : [...prev, e]);
@@ -32,7 +36,6 @@ export default function HomeScreen({ onResponse }: Props) {
     const sessionId = getSessionId();
 
     try {
-      // Check global daily usage
       const { data: globalUsage, error: globalErr } = await externalSupabase
         .from("daily_global_usage")
         .select("total_calls")
@@ -41,12 +44,11 @@ export default function HomeScreen({ onResponse }: Props) {
       if (globalErr && globalErr.code !== "PGRST116") throw globalErr;
 
       if (globalUsage && globalUsage.total_calls >= 200) {
-        setError("Sakeena is resting for today. Come back tomorrow — rest is part of tawakkul.");
+        setError("Sakeenah is resting for today. Come back tomorrow — rest is part of tawakkul.");
         setLoading(false);
         return;
       }
 
-      // Check per-session daily usage
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
@@ -64,7 +66,6 @@ export default function HomeScreen({ onResponse }: Props) {
         return;
       }
 
-      // Make AI call
       const userMessage = `Journal entry: ${thought.trim()}\n\nEmotion labels: ${emotions.length ? emotions.join(", ") : "None provided"}`;
 
       const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect", {
@@ -75,7 +76,6 @@ export default function HomeScreen({ onResponse }: Props) {
 
       const responseText = data?.response || data?.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
 
-      // Save entry to external Supabase
       const { error: insertErr } = await externalSupabase.from("entries").insert({
         session_id: sessionId,
         entry_text: thought.trim(),
@@ -85,7 +85,6 @@ export default function HomeScreen({ onResponse }: Props) {
 
       if (insertErr) throw insertErr;
 
-      // Log usage
       await externalSupabase.from("usage_log").insert({ session_id: sessionId });
 
       const entry: JournalEntry = {
@@ -105,41 +104,64 @@ export default function HomeScreen({ onResponse }: Props) {
   };
 
   const remaining = MAX_CHARS - thought.length;
+  const hasContent = thought.trim().length > 0;
 
   return (
-    <div className="animate-fade-in pt-10">
+    <div className="animate-fade-in pt-[36px]">
 
-      <h2 className="font-display text-[32px] mb-7">What's on your mind?</h2>
+      <h2 className="font-display mb-7" style={{ fontSize: '36px', fontWeight: 300, color: '#2C1810' }}>What's on your mind?</h2>
 
       <textarea
         value={thought}
         onChange={(e) => e.target.value.length <= MAX_CHARS && setThought(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         placeholder="What is on your heart today..."
         rows={5}
-        className="w-full rounded-lg p-4 text-sm font-body resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-        style={{ lineHeight: '1.8', background: '#FFFFFF', border: '1px solid #E8E3DC', minHeight: '160px' }}
+        className="w-full resize-none focus:outline-none font-body"
+        style={{
+          lineHeight: '1.85',
+          fontSize: '15px',
+          background: '#FFFAF7',
+          border: `1px solid ${isFocused || hasContent ? '#C17C74' : '#E8D5C8'}`,
+          borderRadius: '18px',
+          padding: '16px 18px',
+          minHeight: '164px',
+          color: '#2C1810',
+          boxShadow: isFocused || hasContent ? '0 0 0 3px rgba(193, 124, 116, 0.15)' : 'none',
+          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+          fontStyle: !hasContent ? 'italic' : 'normal',
+        }}
       />
-      <p className={`text-xs mt-1 text-right ${remaining < 30 ? "text-destructive" : "text-muted-foreground"}`}>
+      <p className="text-xs mt-1 text-right" style={{ color: remaining < 30 ? '#A85E56' : 'rgba(44, 24, 16, 0.45)' }}>
         {remaining} characters remaining
       </p>
 
       <div className="flex flex-wrap gap-2 mt-7">
-        {EMOTIONS.map((e) => (
-          <button
-            key={e}
-            onClick={() => toggleEmotion(e)}
-            className={`chip ${emotions.includes(e) ? "chip-active" : ""}`}
-          >
-            {e}
-          </button>
-        ))}
+        {EMOTIONS.map((e) => {
+          const isActive = emotions.includes(e);
+          const isTerracotta = TERRACOTTA_EMOTIONS.includes(e);
+          return (
+            <button
+              key={e}
+              onClick={() => toggleEmotion(e)}
+              className={`chip ${isActive ? `chip-active ${isTerracotta ? 'chip-active-terracotta' : 'chip-active-rose'}` : ""}`}
+            >
+              {e}
+            </button>
+          );
+        })}
       </div>
 
       <button
         onClick={submit}
         disabled={!thought.trim() || loading}
-        className="w-full mt-7 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
-        style={(!thought.trim() || loading) ? {} : { backgroundColor: '#6B9970' }}
+        className="w-full mt-7 py-3 rounded-full text-sm font-medium transition-all"
+        style={
+          !thought.trim() || loading
+            ? { background: '#E8CFC8', color: 'rgba(255,255,255,0.65)', borderRadius: '100px' }
+            : { background: 'linear-gradient(135deg, #A85E56, #A85A38)', color: 'white', borderRadius: '100px', boxShadow: '0 6px 20px rgba(168, 94, 86, 0.35)' }
+        }
       >
         {loading ? (
           <span className="animate-pulse-soft">Reflecting...</span>
@@ -148,7 +170,7 @@ export default function HomeScreen({ onResponse }: Props) {
         )}
       </button>
 
-      {error && <p className="text-destructive text-xs mt-2 text-center">{error}</p>}
+      {error && <p className="text-xs mt-2 text-center" style={{ color: '#A85E56' }}>{error}</p>}
     </div>
   );
 }
