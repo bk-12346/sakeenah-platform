@@ -57,21 +57,7 @@ export default function HomeScreen({ onResponse }: Props) {
   const remaining = MAX_CHARS - thought.length;
 
   return (
-    <div className="animate-fade-in relative pt-10">
-      {/* Decorative Islamic geometric watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
-        <svg width="280" height="280" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.04 }}>
-          <g transform="translate(140,140)">
-            {/* 8-pointed star */}
-            <polygon points="0,-120 34,-34 120,0 34,34 0,120 -34,34 -120,0 -34,-34" fill="#7CA982" />
-            <polygon points="0,-120 34,-34 120,0 34,34 0,120 -34,34 -120,0 -34,-34" fill="#7CA982" transform="rotate(45)" />
-            {/* Inner circle */}
-            <circle cx="0" cy="0" r="40" fill="none" stroke="#7CA982" strokeWidth="2" />
-            {/* Crescent */}
-            <path d="M-15,-80 A30,30 0 1,1 -15,-20 A22,22 0 1,0 -15,-80 Z" fill="#7CA982" transform="rotate(15)" />
-          </g>
-        </svg>
-      </div>
+    <div className="animate-fade-in pt-10">
 
       <h2 className="font-display text-2xl mb-7">What's on your mind?</h2>
 
