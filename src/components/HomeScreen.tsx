@@ -109,7 +109,7 @@ export default function HomeScreen({ onResponse }: Props) {
   return (
     <div className="animate-fade-in pt-10">
 
-      <h2 className="font-display text-2xl mb-7">What's on your mind?</h2>
+      <h2 className="font-display text-[32px] mb-7">What's on your mind?</h2>
 
       <textarea
         value={thought}
