@@ -46,7 +46,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.18) 0%, transparent 70%)',
+          background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.10) 0%, transparent 70%)',
         }}
       />
 
