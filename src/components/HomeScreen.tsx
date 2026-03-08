@@ -138,8 +138,8 @@ export default function HomeScreen({ onResponse }: Props) {
       <button
         onClick={submit}
         disabled={!thought.trim() || loading}
-        className="w-full mt-7 py-3 text-primary-foreground rounded-full text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
-        style={{ backgroundColor: (!thought.trim() || loading) ? undefined : '#6B9970' }}
+        className="w-full mt-7 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+        style={(!thought.trim() || loading) ? {} : { backgroundColor: '#6B9970' }}
       >
         {loading ? (
           <span className="animate-pulse-soft">Reflecting...</span>
