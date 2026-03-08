@@ -22,25 +22,27 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: '#FDF6F0' }}>
       {/* Nav */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm" style={{ borderBottom: '1px solid #E8E3DC' }}>
+      <header className="sticky top-0 z-10 backdrop-blur-sm" style={{ background: '#FDF6F0', borderBottom: '1px solid #F0E0D4' }}>
         <div className="max-w-[420px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-display text-[26px] italic font-semibold leading-none">Sakeena</h1>
-              <p className="text-[10px] text-muted-foreground mt-0.5">A quiet space for your thoughts.</p>
+              <h1 className="font-display leading-none" style={{ fontSize: '23px', fontStyle: 'italic', color: '#2C1810' }}>Sakeenah</h1>
+              <p className="mt-0.5 font-body" style={{ fontSize: '10.5px', color: 'rgba(44, 24, 16, 0.45)' }}>A quiet space for your thoughts.</p>
             </div>
             <nav className="flex gap-4 text-xs font-medium">
               <button
                 onClick={() => setScreen("home")}
-                className={`transition-colors ${screen === "home" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                className="transition-colors"
+                style={{ color: screen === "home" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
               >
                 Home
               </button>
               <button
                 onClick={() => setScreen("journal")}
-                className={`transition-colors ${screen === "journal" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                className="transition-colors"
+                style={{ color: screen === "journal" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
               >
                 Journal
               </button>
@@ -50,7 +52,7 @@ const Index = () => {
       </header>
 
       {/* Content */}
-      <main className="max-w-[420px] mx-auto px-6 py-7">
+      <main className="max-w-[420px] mx-auto px-6 pt-9 pb-7">
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
