@@ -40,7 +40,8 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-8"
-      style={{ background: '#1A0F0A' }}
+      onClick={screen < 2 ? advance : undefined}
+      style={{ background: '#1A0F0A', cursor: screen < 2 ? 'pointer' : 'default' }}
     >
       {/* Radial gradient wash */}
       <div
