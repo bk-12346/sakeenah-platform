@@ -129,7 +129,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   height: '6px',
                   borderRadius: i === screen ? '3px' : '50%',
                   width: i === screen ? '22px' : '6px',
-                  background: i === screen ? '#C17C74' : '#E8D5C8',
+                  background: i === screen ? '#C17C74' : 'rgba(255, 248, 242, 0.15)',
                   transition: 'all 0.3s ease',
                 }}
               />
