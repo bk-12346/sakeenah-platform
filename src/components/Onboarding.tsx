@@ -40,13 +40,13 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-8"
-      style={{ background: '#FDF6F0' }}
+      style={{ background: '#1A0F0A' }}
     >
       {/* Radial gradient wash */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.18) 0%, transparent 70%)',
+          background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.10) 0%, transparent 70%)',
         }}
       />
 
@@ -82,14 +82,14 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 fontStyle: 'italic',
                 fontWeight: 300,
                 fontSize: '46px',
-                color: '#2C1810',
+                color: 'rgba(255, 248, 242, 0.9)',
                 marginBottom: '24px',
               },
               "onboarding-heading": {
                 fontFamily: "'Cormorant Garamond', serif",
                 fontWeight: 300,
                 fontSize: '28px',
-                color: '#2C1810',
+                color: 'rgba(255, 248, 242, 0.85)',
                 marginBottom: '16px',
               },
               "onboarding-body": {
@@ -97,7 +97,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 fontStyle: 'italic',
                 fontSize: '15px',
                 lineHeight: '1.9',
-                color: 'rgba(44, 24, 16, 0.45)',
+                color: 'rgba(255, 248, 242, 0.40)',
                 marginBottom: '16px',
               },
               "onboarding-body-muted": {
@@ -105,14 +105,14 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 fontStyle: 'italic',
                 fontSize: '14px',
                 lineHeight: '1.9',
-                color: 'rgba(44, 24, 16, 0.35)',
+                color: 'rgba(255, 248, 242, 0.30)',
               },
               "onboarding-body-small": {
                 fontFamily: "'Lora', serif",
                 fontStyle: 'italic',
                 fontSize: '12px',
                 lineHeight: '1.9',
-                color: 'rgba(44, 24, 16, 0.35)',
+                color: 'rgba(255, 248, 242, 0.30)',
               },
             };
             return (
@@ -129,7 +129,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                   height: '6px',
                   borderRadius: i === screen ? '3px' : '50%',
                   width: i === screen ? '22px' : '6px',
-                  background: i === screen ? '#C17C74' : '#E8D5C8',
+                  background: i === screen ? '#C17C74' : 'rgba(255, 248, 242, 0.15)',
                   transition: 'all 0.3s ease',
                 }}
               />
@@ -140,7 +140,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             <button
               onClick={advance}
               className="mt-4 text-sm font-body"
-              style={{ color: 'rgba(44, 24, 16, 0.45)' }}
+              style={{ color: 'rgba(255, 248, 242, 0.35)' }}
             >
               Tap to continue
             </button>
