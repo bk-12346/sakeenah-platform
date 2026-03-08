@@ -19,7 +19,7 @@ const screens = [
   {
     lines: [
       { text: "A few things worth knowing.", className: "onboarding-heading" },
-      { text: "Your thoughts are private and stored only on your device. We never see them. No one does.", className: "onboarding-body" },
+      { text: "Your thoughts are stored privately and securely. We never read them. No one does.", className: "onboarding-body" },
       { text: "Sakeenah is a space for reflection, not a replacement for professional support. If you are struggling seriously, please reach out to someone you trust or a mental health professional.", className: "onboarding-body-small" },
     ],
   },
