@@ -140,7 +140,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             <button
               onClick={advance}
               className="mt-4 text-sm font-body"
-              style={{ color: 'rgba(44, 24, 16, 0.45)' }}
+              style={{ color: 'rgba(255, 248, 242, 0.35)' }}
             >
               Tap to continue
             </button>
