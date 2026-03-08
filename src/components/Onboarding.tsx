@@ -82,14 +82,14 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 fontStyle: 'italic',
                 fontWeight: 300,
                 fontSize: '46px',
-                color: '#2C1810',
+                color: 'rgba(255, 248, 242, 0.9)',
                 marginBottom: '24px',
               },
               "onboarding-heading": {
                 fontFamily: "'Cormorant Garamond', serif",
                 fontWeight: 300,
                 fontSize: '28px',
-                color: '#2C1810',
+                color: 'rgba(255, 248, 242, 0.85)',
                 marginBottom: '16px',
               },
               "onboarding-body": {
@@ -97,7 +97,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 fontStyle: 'italic',
                 fontSize: '15px',
                 lineHeight: '1.9',
-                color: 'rgba(44, 24, 16, 0.45)',
+                color: 'rgba(255, 248, 242, 0.40)',
                 marginBottom: '16px',
               },
               "onboarding-body-muted": {
@@ -105,14 +105,14 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
                 fontStyle: 'italic',
                 fontSize: '14px',
                 lineHeight: '1.9',
-                color: 'rgba(44, 24, 16, 0.35)',
+                color: 'rgba(255, 248, 242, 0.30)',
               },
               "onboarding-body-small": {
                 fontFamily: "'Lora', serif",
                 fontStyle: 'italic',
                 fontSize: '12px',
                 lineHeight: '1.9',
-                color: 'rgba(44, 24, 16, 0.35)',
+                color: 'rgba(255, 248, 242, 0.30)',
               },
             };
             return (
