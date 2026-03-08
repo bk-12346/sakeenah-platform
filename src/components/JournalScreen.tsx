@@ -57,7 +57,7 @@ export default function JournalScreen() {
       {entries.map((entry) => {
         const isOpen = expanded === entry.id;
         return (
-          <div key={entry.id} className="bg-card rounded-lg border border-border overflow-hidden">
+          <div key={entry.id} className="rounded-lg overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E8E3DC' }}>
             <button
               onClick={() => setExpanded(isOpen ? null : entry.id)}
               className="w-full p-4 text-left flex items-start justify-between gap-3"
