@@ -60,7 +60,7 @@ export default function JournalScreen() {
           <div key={entry.id} className="rounded-lg overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E8E3DC' }}>
             <button
               onClick={() => setExpanded(isOpen ? null : entry.id)}
-              className="w-full p-4 text-left flex items-start justify-between gap-3"
+              className="w-full text-left flex items-start justify-between gap-3" style={{ padding: '20px' }}
             >
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">
