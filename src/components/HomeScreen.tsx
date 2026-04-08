@@ -109,7 +109,7 @@ export default function HomeScreen({ onResponse }: Props) {
   return (
     <div className="animate-fade-in pt-[36px]">
 
-      <h2 className="font-display mb-7" style={{ fontSize: '36px', fontWeight: 300, color: '#2C1810' }}>What's on your mind?</h2>
+      <h2 className="font-display mb-7" style={{ fontSize: '36px', fontWeight: 300, fontStyle: 'italic', color: '#2C1810' }}>What's on your mind?</h2>
 
       <textarea
         value={thought}
@@ -122,9 +122,9 @@ export default function HomeScreen({ onResponse }: Props) {
         style={{
           lineHeight: '1.85',
           fontSize: '15px',
-          background: '#FFFAF7',
+          background: '#FFFFFF',
           border: `1px solid ${isFocused || hasContent ? '#C17C74' : '#E8D5C8'}`,
-          borderRadius: '18px',
+          borderRadius: '12px',
           padding: '16px 18px',
           minHeight: '164px',
           color: '#2C1810',
@@ -159,8 +159,8 @@ export default function HomeScreen({ onResponse }: Props) {
         className="w-full mt-7 py-3 rounded-full text-sm font-medium transition-all"
         style={
           !thought.trim() || loading
-            ? { background: '#E8CFC8', color: 'rgba(255,255,255,0.65)', borderRadius: '100px' }
-            : { background: 'linear-gradient(135deg, #A85E56, #A85A38)', color: 'white', borderRadius: '100px', boxShadow: '0 6px 20px rgba(168, 94, 86, 0.35)' }
+            ? { background: 'rgba(44, 24, 16, 0.3)', color: 'rgba(253, 246, 240, 0.65)', borderRadius: '100px' }
+            : { background: '#2C1810', color: '#FDF6F0', borderRadius: '100px' }
         }
       >
         {loading ? (

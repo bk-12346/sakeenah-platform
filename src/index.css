@@ -87,8 +87,8 @@
     @apply rounded-full font-medium cursor-pointer select-none;
     padding: 7px 16px;
     font-size: 12.5px;
-    background: #FFFAF7;
-    border: 1px solid #E8D5C8;
+    background: #FFFFFF;
+    border: 0.5px solid #E8D5C8;
     color: #2C1810;
     border-radius: 100px;
     transition: all 0.2s ease;

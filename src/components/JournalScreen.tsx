@@ -63,7 +63,7 @@ export default function JournalScreen() {
             style={{
               background: '#FFFAF7',
               border: '1px solid #F0E0D4',
-              borderRadius: '18px',
+              borderRadius: '12px',
               boxShadow: '0 2px 14px rgba(44, 24, 16, 0.05)',
             }}
           >
@@ -99,10 +99,10 @@ export default function JournalScreen() {
                   className="prose prose-sm max-w-none leading-relaxed font-body"
                   style={{
                     color: '#2C1810',
-                    borderLeft: '2px solid #C17C74',
+                    borderLeft: '1.5px solid #E2CFC5',
                     paddingLeft: '14px',
-                    fontSize: '15px',
-                    lineHeight: '1.85',
+                    fontSize: '13px',
+                    lineHeight: '1.75',
                   }}
                 >
                   <ReactMarkdown>{entry.ai_response}</ReactMarkdown>

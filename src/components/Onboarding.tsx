@@ -152,10 +152,9 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
               onClick={advance}
               className="mt-4 px-8 py-2.5 text-sm font-medium"
               style={{
-                background: 'linear-gradient(135deg, #A85E56, #A85A38)',
-                color: 'white',
+                background: '#2C1810',
+                color: '#FDF6F0',
                 borderRadius: '100px',
-                boxShadow: '0 6px 20px rgba(168, 94, 86, 0.35)',
               }}
             >
               Let go
