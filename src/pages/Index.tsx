@@ -61,7 +61,7 @@ const Index = () => {
             onViewJournal={() => setScreen("journal")}
           />
         )}
-        {screen === "journal" && <JournalScreen />}
+        {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
       </main>
     </div>
   );

@@ -14,7 +14,11 @@ interface EntryRow {
   created_at: string;
 }
 
-export default function JournalScreen() {
+interface Props {
+  onNavigateHome?: () => void;
+}
+
+export default function JournalScreen({ onNavigateHome }: Props) {
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -46,8 +50,56 @@ export default function JournalScreen() {
 
   if (entries.length === 0) {
     return (
-      <div className="animate-fade-in text-center py-12 pt-[36px]">
-        <p className="text-sm" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>No entries yet. Start by writing your first thought.</p>
+      <div
+        className="animate-fade-in"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 200px)',
+          textAlign: 'center',
+        }}
+      >
+        <h2
+          className="font-display"
+          style={{
+            fontSize: '24px',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            color: '#2C1810',
+          }}
+        >
+          Your reflections will appear here
+        </h2>
+        <p
+          className="font-body"
+          style={{
+            fontSize: '13px',
+            color: 'rgba(44, 24, 16, 0.45)',
+            marginTop: '8px',
+          }}
+        >
+          Begin by sharing what is on your heart.
+        </p>
+        {onNavigateHome && (
+          <button
+            onClick={onNavigateHome}
+            className="font-body"
+            style={{
+              background: '#2C1810',
+              color: '#FDF6F0',
+              fontSize: '13px',
+              padding: '12px 28px',
+              borderRadius: '100px',
+              marginTop: '24px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Write your first reflection
+          </button>
+        )}
       </div>
     );
   }
