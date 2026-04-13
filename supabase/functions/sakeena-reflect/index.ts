@@ -63,7 +63,7 @@ STRICT RULES:
 - Maximum 60 words. Count every word. Stop at 60.
 - Do NOT ask any questions — none at all
 - Do NOT add new Islamic references
-- Acknowledge what they said in 1 sentence
+- Acknowledge what they just said in 1 sentence
 - Close warmly with a sense of completion
 - Do not say goodbye or farewell — the closing message appears automatically after you`;
 
@@ -81,8 +81,10 @@ serve(async (req) => {
     let systemPrompt: string;
     if (turnNumber === 1) {
       systemPrompt = SYSTEM_PROMPT;
-    } else if (turnNumber <= 3) {
+    } else if (turnNumber === 2 || turnNumber === 3) {
       systemPrompt = CONVERSATIONAL_PROMPT;
+    } else if (turnNumber === 4) {
+      systemPrompt = CLOSING_PROMPT;
     } else {
       systemPrompt = CLOSING_PROMPT;
     }
