@@ -1,16 +1,91 @@
-import { useState } from "react";
-import { isOnboardingDone, type JournalEntry } from "@/lib/storage";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { isOnboardingDone, type JournalEntry, getEntries } from "@/lib/storage";
+import { getSessionId } from "@/lib/session";
 import Onboarding from "@/components/Onboarding";
 import HomeScreen from "@/components/HomeScreen";
 import ResponseScreen from "@/components/ResponseScreen";
 import JournalScreen from "@/components/JournalScreen";
+import SignUpPrompt from "@/components/SignUpPrompt";
+import SignInScreen from "@/components/SignInScreen";
+import EmailConfirmationScreen from "@/components/EmailConfirmationScreen";
+import PasswordResetScreen from "@/components/PasswordResetScreen";
+import type { User } from "@supabase/supabase-js";
 
-type Screen = "home" | "response" | "journal";
+type Screen = "home" | "response" | "journal" | "signup" | "signin" | "confirm-email" | "reset-password";
 
 const Index = () => {
-  const [showOnboarding, setShowOnboarding] = useState(!isOnboardingDone());
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [screen, setScreen] = useState<Screen>("home");
   const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
+  const [signUpEmail, setSignUpEmail] = useState("");
+
+  useEffect(() => {
+    // Set up auth listener BEFORE checking session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (event === "SIGNED_IN" && currentUser) {
+        // Migrate localStorage data on sign in (after email confirmation)
+        await migrateLocalData(currentUser.id);
+        setShowOnboarding(false);
+        setScreen("home");
+      }
+
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+      }
+    });
+
+    // Check existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        // Authenticated user — skip onboarding
+        setShowOnboarding(false);
+        setScreen("home");
+      } else {
+        // Anonymous user — check onboarding
+        setShowOnboarding(!isOnboardingDone());
+      }
+
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const migrateLocalData = async (userId: string) => {
+    try {
+      const localEntries = getEntries();
+      const sessionId = getSessionId();
+
+      if (localEntries.length > 0) {
+        for (const entry of localEntries) {
+          await supabase.from("entries").insert({
+            session_id: sessionId,
+            user_id: userId,
+            entry_text: entry.thought,
+            emotion_labels: entry.emotions,
+            ai_response: entry.response,
+            created_at: entry.createdAt,
+          });
+        }
+        // Clear localStorage entries after migration
+        localStorage.removeItem("sakeena_entries");
+      }
+
+      // Mark onboarding as completed in profile
+      await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+    } catch (e) {
+      console.error("Migration error:", e);
+    }
+  };
 
   const handleResponse = (entry: JournalEntry) => {
     setLastEntry(entry);
@@ -19,10 +94,55 @@ const Index = () => {
 
   const handleEntryUpdate = (updatedEntry: JournalEntry) => {
     setLastEntry(updatedEntry);
+
+    // If conversation is complete and user is not authenticated, show sign-up prompt
+    if (updatedEntry.status === "complete" && !user) {
+      // Small delay so user sees the completion message first
+      setTimeout(() => setScreen("signup"), 2000);
+    }
   };
+
+  const handleSignUpSuccess = (email: string) => {
+    setSignUpEmail(email);
+    setScreen("confirm-email");
+  };
+
+  const handleSignInSuccess = () => {
+    setScreen("home");
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FDF6F0' }}>
+        <p className="font-body animate-pulse-soft" style={{ fontSize: '14px', color: 'rgba(44, 24, 16, 0.45)' }}>
+          Loading...
+        </p>
+      </div>
+    );
+  }
 
   if (showOnboarding) {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
+  }
+
+  // Full-screen auth screens (no nav bar)
+  if (screen === "signup") {
+    return <SignUpPrompt onSignUpSuccess={handleSignUpSuccess} onSignIn={() => setScreen("signin")} />;
+  }
+  if (screen === "signin") {
+    return (
+      <SignInScreen
+        onSignInSuccess={handleSignInSuccess}
+        onSignUp={() => setScreen("signup")}
+        onForgotPassword={() => setScreen("reset-password")}
+      />
+    );
+  }
+  if (screen === "confirm-email") {
+    return <EmailConfirmationScreen email={signUpEmail} onBackToSignUp={() => setScreen("signup")} />;
+  }
+  if (screen === "reset-password") {
+    return <PasswordResetScreen onBackToSignIn={() => setScreen("signin")} />;
   }
 
   return (
@@ -35,21 +155,42 @@ const Index = () => {
               <h1 className="font-display leading-none" style={{ fontSize: '23px', fontStyle: 'italic', color: '#2C1810' }}>Sakeenah</h1>
               <p className="mt-0.5 font-body" style={{ fontSize: '10.5px', color: 'rgba(44, 24, 16, 0.45)' }}>A quiet space for your thoughts.</p>
             </div>
-            <nav className="flex gap-4 text-xs font-medium">
+            <nav className="flex gap-4 text-xs font-medium items-center">
               <button
                 onClick={() => setScreen("home")}
-                className="transition-colors"
+                className="transition-colors font-body"
                 style={{ color: screen === "home" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
               >
                 Home
               </button>
               <button
                 onClick={() => setScreen("journal")}
-                className="transition-colors"
+                className="transition-colors font-body"
                 style={{ color: screen === "journal" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
               >
                 Journal
               </button>
+              {user ? (
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setUser(null);
+                    setScreen("home");
+                  }}
+                  className="transition-colors font-body"
+                  style={{ color: 'rgba(44, 24, 16, 0.45)', fontSize: '11px' }}
+                >
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  onClick={() => setScreen("signin")}
+                  className="transition-colors font-body"
+                  style={{ color: 'rgba(44, 24, 16, 0.45)', fontSize: '11px' }}
+                >
+                  Sign in
+                </button>
+              )}
             </nav>
           </div>
         </div>
