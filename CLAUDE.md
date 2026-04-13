@@ -119,6 +119,8 @@ Never use system fonts or sans-serif fonts anywhere in the UI. Every text elemen
 
 ## Database schema
 
+**Supabase project:** `zwphhjpobrxhwndtlutg`
+
 ### Current tables (Supabase)
 
 **entries**
@@ -142,6 +144,20 @@ Never use system fonts or sans-serif fonts anywhere in the UI. Every text elemen
 
 ---
 
+## Auth
+
+- Provider: Supabase Auth
+- Method: Email and password only — no social login
+- Email confirmation: enabled
+- New users must verify their email before accessing the app
+- The sign up prompt appears after a user completes their first full conversation (all 4 exchanges)
+- Anonymous users can complete one full conversation before being prompted to sign up
+- On sign up, the anonymous session data should be migrated to the new user account
+- Returning authenticated users go straight to the home screen
+- The auth screens must follow the CLAUDE.md design system exactly — same fonts, colours, and component conventions
+
+---
+
 ## AI edge function
 
 **Location:** `supabase/functions/sakeena-reflect/index.ts`
@@ -158,13 +174,13 @@ Never use system fonts or sans-serif fonts anywhere in the UI. Every text elemen
 
 ## Current build priorities (in order)
 
-1. UI redesign — HomeScreen, ResponseScreen, JournalScreen, Onboarding (polish only)
-2. Streamed AI responses in ResponseScreen
-3. Empty state for JournalScreen and reflections counter on HomeScreen
+1. ✅ UI redesign — complete
+2. ✅ Empty journal state — complete
+3. ✅ Conversational follow-up — complete (testing on Lovable hosted app)
 4. Supabase auth — email and password sign up and sign in
 5. Migrate storage from localStorage to Supabase database
-6. Switch AI edge function from Lovable gateway to Anthropic API directly
-7. Conversational follow-up — 3 to 4 exchanges, saved as one complete session
+6. Switch AI edge function to Anthropic API
+7. Reflections counter
 
 ---
 

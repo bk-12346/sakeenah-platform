@@ -47,15 +47,45 @@ STRICT RULES
 - Stick to universally accepted Islamic principles across Sunni and Shia traditions — avoid anything sectarian or disputed
 - If the user's entry is clearly unrelated to personal reflection, emotional wellbeing, or spiritual experience — for example if they are asking you to write code, answer trivia, or perform tasks unrelated to journalling — do not generate a standard response. Instead respond only with: "Sakeenah is a space for reflection and stillness. Share what's on your heart and I'll respond with something grounded in tawakkul, insha'Allah."`;
 
+const CONVERSATIONAL_PROMPT = `You are having a brief natural conversation. This is NOT a new reflection. Do not give a structured response.
+
+STRICT RULES:
+- Maximum 50 words. Count every word. Stop at 50.
+- Do NOT mention any Names of Allah
+- Do NOT quote Quran or Hadith
+- Respond only to what was just said, naturally and warmly
+- One short question OR one brief encouragement — never both
+- Sound like a caring friend, not a scholar`;
+
+const CLOSING_PROMPT = `This is your final response. The conversation ends after this.
+
+STRICT RULES:
+- Maximum 60 words. Count every word. Stop at 60.
+- Do NOT ask any questions — none at all
+- Do NOT add new Islamic references
+- Acknowledge what they said in 1 sentence
+- Close warmly with a sense of completion
+- Do not say goodbye or farewell — the closing message appears automatically after you`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, turnNumber = 1 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Select system prompt based on turn number
+    let systemPrompt: string;
+    if (turnNumber === 1) {
+      systemPrompt = SYSTEM_PROMPT;
+    } else if (turnNumber <= 3) {
+      systemPrompt = CONVERSATIONAL_PROMPT;
+    } else {
+      systemPrompt = CLOSING_PROMPT;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -66,7 +96,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           ...messages,
         ],
       }),

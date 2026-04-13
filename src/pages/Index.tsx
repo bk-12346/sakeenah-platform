@@ -17,6 +17,10 @@ const Index = () => {
     setScreen("response");
   };
 
+  const handleEntryUpdate = (updatedEntry: JournalEntry) => {
+    setLastEntry(updatedEntry);
+  };
+
   if (showOnboarding) {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
@@ -59,6 +63,7 @@ const Index = () => {
             entry={lastEntry}
             onNewEntry={() => setScreen("home")}
             onViewJournal={() => setScreen("journal")}
+            onEntryUpdate={handleEntryUpdate}
           />
         )}
         {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}

@@ -1,8 +1,16 @@
+export interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface JournalEntry {
   id: string;
   thought: string;
   emotions: string[];
   response: string;
+  messages: ConversationMessage[];
+  turnCount: number;
+  status: "active" | "complete";
   createdAt: string;
 }
 

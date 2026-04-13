@@ -36,19 +36,7 @@ export default function HomeScreen({ onResponse }: Props) {
     const sessionId = getSessionId();
 
     try {
-      const { data: globalUsage, error: globalErr } = await externalSupabase
-        .from("daily_global_usage")
-        .select("total_calls")
-        .single();
-
-      if (globalErr && globalErr.code !== "PGRST116") throw globalErr;
-
-      if (globalUsage && globalUsage.total_calls >= 200) {
-        setError("Sakeenah is resting for today. Come back tomorrow — rest is part of tawakkul.");
-        setLoading(false);
-        return;
-      }
-
+      // Check if user has already started a conversation today (1 per day limit)
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
@@ -60,16 +48,18 @@ export default function HomeScreen({ onResponse }: Props) {
 
       if (sessionErr) throw sessionErr;
 
-      if ((count ?? 0) >= 10) {
-        setError("You have reached today's reflection limit. Come back tomorrow — rest is part of tawakkul.");
+      if ((count ?? 0) >= 1) {
+        setError("You have already reflected today. Come back tomorrow — rest is part of tawakkul.");
         setLoading(false);
         return;
       }
 
       const userMessage = `Journal entry: ${thought.trim()}\n\nEmotion labels: ${emotions.length ? emotions.join(", ") : "None provided"}`;
 
+      const initialMessages = [{ role: "user" as const, content: userMessage }];
+
       const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect", {
-        body: { messages: [{ role: "user", content: userMessage }] },
+        body: { messages: initialMessages, turnNumber: 1 },
       });
 
       if (fnError) throw fnError;
@@ -87,11 +77,20 @@ export default function HomeScreen({ onResponse }: Props) {
 
       await externalSupabase.from("usage_log").insert({ session_id: sessionId });
 
+      // Build messages array with initial exchange
+      const messagesWithResponse = [
+        ...initialMessages,
+        { role: "assistant" as const, content: responseText },
+      ];
+
       const entry: JournalEntry = {
         id: crypto.randomUUID(),
         thought: thought.trim(),
         emotions,
         response: responseText,
+        messages: messagesWithResponse,
+        turnCount: 1,
+        status: "active",
         createdAt: new Date().toISOString(),
       };
 
