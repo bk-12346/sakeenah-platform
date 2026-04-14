@@ -1,18 +1,26 @@
 
 
-## Update edge function prompts and turn logic
+## Three fixes
 
-Two small changes in `supabase/functions/sakeena-reflect/index.ts`:
+### 1. Invert button colours on dark auth screens
 
-1. **CLOSING_PROMPT (line 67):** Change "Acknowledge what they said" to "Acknowledge what they just said" — this is the only difference from the current text.
+**Files:** `src/components/SignUpPrompt.tsx`, `src/components/SignInScreen.tsx`
 
-2. **Prompt selection logic (line 84):** Change `turnNumber <= 3` to `turnNumber <= 3` (already correct) and change `else` (line 86) to `else if (turnNumber === 4)` with a fallback. Actually, the current logic already maps turns 2-3 to CONVERSATIONAL and 4+ to CLOSING, which matches the request.
+Change the primary button style on both screens:
+- Background: `#2C1810` → `#FDF6F0`
+- Text colour: `#FDF6F0` → `#2C1810`
+- Loading state background: `rgba(253, 246, 240, 0.5)` instead of `rgba(44, 24, 16, 0.5)`
 
-**Wait** — re-reading more carefully: the CONVERSATIONAL_PROMPT is already identical to what's requested. The CLOSING_PROMPT differs only on line 67: "Acknowledge what they said" → "Acknowledge what they just said". The turn logic is already correct (`turnNumber === 1` → SYSTEM, `turnNumber <= 3` → CONVERSATIONAL, else → CLOSING which covers turnNumber 4).
+### 2. Responsive heading size on HomeScreen
 
-### Changes
-- **Line 67**: Change `"Acknowledge what they said in 1 sentence"` to `"Acknowledge what they just said in 1 sentence"`
-- **Lines 84-88**: Update logic to explicitly use `turnNumber === 2 || turnNumber === 3` and `turnNumber === 4` (functionally equivalent but more explicit per request)
+**File:** `src/components/HomeScreen.tsx`
 
-No other files changed. Edge function will be redeployed.
+Replace the inline `fontSize: '36px'` on the "What's on your mind?" heading with a responsive approach — use a CSS class or media query so it's `28px` below 420px and `36px` above. Since the app uses Tailwind, the cleanest approach is to use Tailwind's `text-[28px] sm:text-[36px]` and remove the inline fontSize.
+
+### 3. Verify sign-up flow triggers after 4-exchange conversation
+
+**File:** `src/pages/Index.tsx` — the logic at lines 98–102 already triggers sign-up after `entry.status === "complete"` with a 2-second delay. This is correct. I'll test this end-to-end using the browser after making the above changes.
+
+### No other changes
+All three fixes are small and targeted — no structural changes needed.
 
