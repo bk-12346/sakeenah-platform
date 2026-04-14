@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { externalSupabase } from "@/lib/supabase-external";
 import { type JournalEntry, type ConversationMessage } from "@/lib/storage";
 import ReactMarkdown from "react-markdown";
 
@@ -38,10 +39,8 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
 
   const { mainResponse, question } = splitResponseAndQuestion(entry.response);
 
-  // Get follow-up messages (after the initial exchange)
   const followUpMessages = entry.messages?.slice(2) || [];
 
-  // Calculate exchanges remaining (starts at 3 after turn 1, counts down)
   const exchangesRemaining = 4 - entry.turnCount;
 
   const sendReply = async () => {
@@ -54,7 +53,6 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
       const updatedMessages = [...entry.messages, newUserMessage];
       const nextTurn = entry.turnCount + 1;
 
-      console.log("Calling sakeena-reflect with turnNumber:", nextTurn);
       const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect", {
         body: { messages: updatedMessages, turnNumber: nextTurn },
       });
@@ -65,12 +63,23 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
 
       const aiResponse: ConversationMessage = { role: "assistant", content: responseText };
       const finalMessages = [...updatedMessages, aiResponse];
+      const newStatus = nextTurn >= 4 ? "complete" : "active";
+
+      // Persist conversation state to database
+      await externalSupabase
+        .from("entries")
+        .update({
+          messages: finalMessages as unknown as Record<string, unknown>[],
+          turn_count: nextTurn,
+          status: newStatus,
+        })
+        .eq("id", entry.id);
 
       const updatedEntry: JournalEntry = {
         ...entry,
         messages: finalMessages,
         turnCount: nextTurn,
-        status: nextTurn >= 4 ? "complete" : "active",
+        status: newStatus,
       };
 
       onEntryUpdate(updatedEntry);
