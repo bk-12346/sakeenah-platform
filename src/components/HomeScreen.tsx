@@ -108,7 +108,7 @@ export default function HomeScreen({ onResponse }: Props) {
   return (
     <div className="animate-fade-in pt-[36px]">
 
-      <h2 className="font-display mb-7" style={{ fontSize: '36px', fontWeight: 300, fontStyle: 'italic', color: '#2C1810' }}>What's on your mind?</h2>
+      <h2 className="font-display mb-7 text-[28px] min-[420px]:text-[36px]" style={{ fontWeight: 300, fontStyle: 'italic', color: '#2C1810' }}>What's on your mind?</h2>
 
       <textarea
         value={thought}

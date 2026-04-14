@@ -121,8 +121,8 @@ export default function SignUpPrompt({ onSignUpSuccess, onSignIn }: Props) {
           disabled={loading}
           className="w-full font-body font-medium"
           style={{
-            background: loading ? 'rgba(44, 24, 16, 0.5)' : '#2C1810',
-            color: '#FDF6F0',
+            background: loading ? 'rgba(253, 246, 240, 0.5)' : '#FDF6F0',
+            color: '#2C1810',
             borderRadius: '100px',
             padding: '14px',
             fontSize: '14px',
