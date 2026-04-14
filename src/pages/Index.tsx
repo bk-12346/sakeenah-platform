@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { isOnboardingDone, type JournalEntry, getEntries } from "@/lib/storage";
+import { externalSupabase } from "@/lib/supabase-external";
+import { isOnboardingDone, type JournalEntry } from "@/lib/storage";
 import { getSessionId } from "@/lib/session";
 import Onboarding from "@/components/Onboarding";
 import HomeScreen from "@/components/HomeScreen";
@@ -23,14 +24,12 @@ const Index = () => {
   const [signUpEmail, setSignUpEmail] = useState("");
 
   useEffect(() => {
-    // Set up auth listener BEFORE checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
       if (event === "SIGNED_IN" && currentUser) {
-        // Migrate localStorage data on sign in (after email confirmation)
-        await migrateLocalData(currentUser.id);
+        await migrateAnonymousData(currentUser.id);
         setShowOnboarding(false);
         setScreen("home");
       }
@@ -40,17 +39,14 @@ const Index = () => {
       }
     });
 
-    // Check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
-        // Authenticated user — skip onboarding
         setShowOnboarding(false);
         setScreen("home");
       } else {
-        // Anonymous user — check onboarding
         setShowOnboarding(!isOnboardingDone());
       }
 
@@ -60,28 +56,29 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const migrateLocalData = async (userId: string) => {
+  const migrateAnonymousData = async (userId: string) => {
     try {
-      const localEntries = getEntries();
       const sessionId = getSessionId();
 
-      if (localEntries.length > 0) {
-        for (const entry of localEntries) {
-          await supabase.from("entries").insert({
-            session_id: sessionId,
-            user_id: userId,
-            entry_text: entry.thought,
-            emotion_labels: entry.emotions,
-            ai_response: entry.response,
-            created_at: entry.createdAt,
-          });
-        }
-        // Clear localStorage entries after migration
-        localStorage.removeItem("sakeena_entries");
-      }
+      // Migrate entries: update anonymous rows to belong to the authenticated user
+      await externalSupabase
+        .from("entries")
+        .update({ user_id: userId, session_id: null })
+        .eq("session_id", sessionId)
+        .is("user_id", null);
+
+      // Migrate usage_log similarly
+      await externalSupabase
+        .from("usage_log")
+        .update({ user_id: userId, session_id: null })
+        .eq("session_id", sessionId)
+        .is("user_id", null);
 
       // Mark onboarding as completed in profile
       await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+
+      // Clear localStorage entries after migration
+      localStorage.removeItem("sakeena_entries");
     } catch (e) {
       console.error("Migration error:", e);
     }
@@ -95,9 +92,7 @@ const Index = () => {
   const handleEntryUpdate = (updatedEntry: JournalEntry) => {
     setLastEntry(updatedEntry);
 
-    // If conversation is complete and user is not authenticated, show sign-up prompt
     if (updatedEntry.status === "complete" && !user) {
-      // Small delay so user sees the completion message first
       setTimeout(() => setScreen("signup"), 2000);
     }
   };
@@ -125,7 +120,6 @@ const Index = () => {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
 
-  // Full-screen auth screens (no nav bar)
   if (screen === "signup") {
     return <SignUpPrompt onSignUpSuccess={handleSignUpSuccess} onSignIn={() => setScreen("signin")} />;
   }
@@ -147,7 +141,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen" style={{ background: '#FDF6F0' }}>
-      {/* Nav */}
       <header className="sticky top-0 z-10 backdrop-blur-sm" style={{ background: '#FDF6F0', borderBottom: '1px solid #F0E0D4' }}>
         <div className="max-w-[420px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
@@ -196,7 +189,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-[420px] mx-auto px-6 pt-9 pb-7">
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
