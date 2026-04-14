@@ -36,15 +36,25 @@ export default function HomeScreen({ onResponse }: Props) {
     const sessionId = getSessionId();
 
     try {
-      // Check if user has already started a conversation today (1 per day limit)
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Check daily usage limit
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
-      const { count, error: sessionErr } = await externalSupabase
+      let usageQuery = externalSupabase
         .from("usage_log")
         .select("*", { count: "exact", head: true })
-        .eq("session_id", sessionId)
         .gte("created_at", todayStart.toISOString());
+
+      if (user) {
+        usageQuery = usageQuery.eq("user_id", user.id);
+      } else {
+        usageQuery = usageQuery.eq("session_id", sessionId);
+      }
+
+      const { count, error: sessionErr } = await usageQuery;
 
       if (sessionErr) throw sessionErr;
 
@@ -66,25 +76,51 @@ export default function HomeScreen({ onResponse }: Props) {
 
       const responseText = data?.response || data?.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
 
-      const { error: insertErr } = await externalSupabase.from("entries").insert({
-        session_id: sessionId,
+      // Insert entry with user_id or session_id based on auth state
+      const entryInsert: Record<string, unknown> = {
         entry_text: thought.trim(),
         emotion_labels: emotions,
         ai_response: responseText,
-      });
+        messages: [...initialMessages, { role: "assistant", content: responseText }],
+        turn_count: 1,
+        status: "active",
+      };
+
+      if (user) {
+        entryInsert.user_id = user.id;
+        entryInsert.session_id = null;
+      } else {
+        entryInsert.user_id = null;
+        entryInsert.session_id = sessionId;
+      }
+
+      const { data: insertedEntry, error: insertErr } = await externalSupabase
+        .from("entries")
+        .insert(entryInsert)
+        .select("id")
+        .single();
 
       if (insertErr) throw insertErr;
 
-      await externalSupabase.from("usage_log").insert({ session_id: sessionId });
+      // Insert usage log
+      const usageInsert: Record<string, unknown> = {};
+      if (user) {
+        usageInsert.user_id = user.id;
+        usageInsert.session_id = null;
+      } else {
+        usageInsert.user_id = null;
+        usageInsert.session_id = sessionId;
+      }
 
-      // Build messages array with initial exchange
+      await externalSupabase.from("usage_log").insert(usageInsert);
+
       const messagesWithResponse = [
         ...initialMessages,
         { role: "assistant" as const, content: responseText },
       ];
 
       const entry: JournalEntry = {
-        id: crypto.randomUUID(),
+        id: insertedEntry?.id || crypto.randomUUID(),
         thought: thought.trim(),
         emotions,
         response: responseText,

@@ -21,7 +21,10 @@ export type Database = {
           emotion_labels: string[]
           entry_text: string
           id: string
+          messages: Json | null
           session_id: string | null
+          status: string | null
+          turn_count: number | null
           user_id: string | null
         }
         Insert: {
@@ -30,7 +33,10 @@ export type Database = {
           emotion_labels?: string[]
           entry_text: string
           id?: string
+          messages?: Json | null
           session_id?: string | null
+          status?: string | null
+          turn_count?: number | null
           user_id?: string | null
         }
         Update: {
@@ -39,7 +45,10 @@ export type Database = {
           emotion_labels?: string[]
           entry_text?: string
           id?: string
+          messages?: Json | null
           session_id?: string | null
+          status?: string | null
+          turn_count?: number | null
           user_id?: string | null
         }
         Relationships: []

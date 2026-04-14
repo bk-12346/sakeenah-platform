@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { externalSupabase } from "@/lib/supabase-external";
 import { getSessionId } from "@/lib/session";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -25,12 +26,21 @@ export default function JournalScreen({ onNavigateHome }: Props) {
 
   useEffect(() => {
     const fetchEntries = async () => {
-      const sessionId = getSessionId();
-      const { data, error } = await externalSupabase
+      const { data: { user } } = await supabase.auth.getUser();
+
+      let query = externalSupabase
         .from("entries")
         .select("*")
-        .eq("session_id", sessionId)
         .order("created_at", { ascending: false });
+
+      if (user) {
+        query = query.eq("user_id", user.id);
+      } else {
+        const sessionId = getSessionId();
+        query = query.eq("session_id", sessionId);
+      }
+
+      const { data, error } = await query;
 
       if (!error && data) {
         setEntries(data as EntryRow[]);
