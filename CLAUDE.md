@@ -176,11 +176,14 @@ Never use system fonts or sans-serif fonts anywhere in the UI. Every text elemen
 
 1. ✅ UI redesign — complete
 2. ✅ Empty journal state — complete
-3. ✅ Conversational follow-up — complete (testing on Lovable hosted app)
-4. Supabase auth — email and password sign up and sign in
+3. ✅ Conversational follow-up — complete
+4. ✅ Supabase auth — complete
 5. Migrate storage from localStorage to Supabase database
-6. Switch AI edge function to Anthropic API
-7. Reflections counter
+6. Reflections counter
+7. Paywall
+8. Daily content
+9. PWA
+10. Anthropic migration — when paying customers justify it
 
 ---
 
