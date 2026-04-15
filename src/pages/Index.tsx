@@ -24,36 +24,58 @@ const Index = () => {
   const [signUpEmail, setSignUpEmail] = useState("");
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const currentUser = session?.user ?? null;
+    let resolved = false;
+
+    const resolve = (currentUser: User | null) => {
+      if (resolved) return;
+      resolved = true;
       setUser(currentUser);
-
-      if (event === "SIGNED_IN" && currentUser) {
-        await migrateAnonymousData(currentUser.id);
-        setShowOnboarding(false);
-        setScreen("home");
-      }
-
-      if (event === "SIGNED_OUT") {
-        setUser(null);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
       if (currentUser) {
         setShowOnboarding(false);
         setScreen("home");
       } else {
         setShowOnboarding(!isOnboardingDone());
       }
-
       setAuthLoading(false);
+    };
+
+    // Timeout fallback: default to unauthenticated after 2 seconds
+    const timer = setTimeout(() => resolve(null), 2000);
+
+    // Check existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timer);
+      resolve(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for future auth changes (sign in, sign out)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const currentUser = session?.user ?? null;
+
+      if (event === "INITIAL_SESSION") {
+        // Already handled by getSession above; skip to avoid double-processing
+        return;
+      }
+
+      setUser(currentUser);
+
+      if (event === "SIGNED_IN" && currentUser) {
+        migrateAnonymousData(currentUser.id);
+        setShowOnboarding(false);
+        setScreen("home");
+        setAuthLoading(false);
+      }
+
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setScreen("home");
+      }
+    });
+
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const migrateAnonymousData = async (userId: string) => {
@@ -108,10 +130,10 @@ const Index = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FDF6F0' }}>
-        <p className="font-body animate-pulse-soft" style={{ fontSize: '14px', color: 'rgba(44, 24, 16, 0.45)' }}>
-          Loading...
-        </p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1A0F0A' }}>
+        <h1 className="font-display" style={{ fontSize: '36px', fontStyle: 'italic', fontWeight: 300, color: 'rgba(255, 248, 242, 0.9)' }}>
+          Sakeenah
+        </h1>
       </div>
     );
   }
