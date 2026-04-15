@@ -130,10 +130,10 @@ const Index = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FDF6F0' }}>
-        <p className="font-body animate-pulse-soft" style={{ fontSize: '14px', color: 'rgba(44, 24, 16, 0.45)' }}>
-          Loading...
-        </p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1A0F0A' }}>
+        <h1 className="font-display" style={{ fontSize: '36px', fontStyle: 'italic', fontWeight: 300, color: 'rgba(255, 248, 242, 0.9)' }}>
+          Sakeenah
+        </h1>
       </div>
     );
   }
