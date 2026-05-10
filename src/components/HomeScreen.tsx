@@ -4,9 +4,11 @@ import { externalSupabase } from "@/lib/supabase-external";
 import { getSessionId } from "@/lib/session";
 import { type JournalEntry } from "@/lib/storage";
 
-const EMOTIONS = [
-  "Anxious", "Worried", "Happy", "Grateful", "Sad",
-  "Angry", "Confused", "Hopeful", "Stressed", "Peaceful",
+const EMOTION_ROWS = [
+  ["Anxious", "Worried", "Overwhelmed", "Burnt Out"],
+  ["Stressed", "Drained", "Sad", "Lonely"],
+  ["Angry", "Guilty", "Lost", "Confused"],
+  ["Hopeful", "Grateful", "Peaceful", "Content"],
 ];
 
 const TERRACOTTA_EMOTIONS = ["Worried", "Angry", "Stressed", "Confused"];
@@ -172,20 +174,26 @@ export default function HomeScreen({ onResponse }: Props) {
         {remaining} characters remaining
       </p>
 
-      <div className="flex flex-wrap gap-2 mt-7">
-        {EMOTIONS.map((e) => {
-          const isActive = emotions.includes(e);
-          const isTerracotta = TERRACOTTA_EMOTIONS.includes(e);
-          return (
-            <button
-              key={e}
-              onClick={() => toggleEmotion(e)}
-              className={`chip ${isActive ? `chip-active ${isTerracotta ? 'chip-active-terracotta' : 'chip-active-rose'}` : ""}`}
-            >
-              {e}
-            </button>
-          );
-        })}
+      <p className="font-body text-xs mt-7" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>
+        What feels closest right now?
+      </p>
+
+      <div className="grid grid-cols-4 gap-x-1 gap-y-3 mt-2">
+        {EMOTION_ROWS.map((row) =>
+          row.map((e) => {
+            const isActive = emotions.includes(e);
+            const isTerracotta = TERRACOTTA_EMOTIONS.includes(e);
+            return (
+              <button
+                key={e}
+                onClick={() => toggleEmotion(e)}
+                className={`chip min-w-[88px] px-5 text-center justify-self-center whitespace-nowrap ${isActive ? `chip-active ${isTerracotta ? 'chip-active-terracotta' : 'chip-active-rose'}` : ""}`}
+              >
+                {e}
+              </button>
+            );
+          })
+        )}
       </div>
 
       <button

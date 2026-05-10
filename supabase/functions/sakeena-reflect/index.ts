@@ -27,7 +27,7 @@ Use the emotion label(s) provided to shape which attributes of Allah you emphasi
 - Anxious / Worried: Al-Wakeel (The Trustee), Al-Hafiz (The Protector), Al-Mujeeb (The Responder)
 - Sad: Ar-Rahman (The Most Merciful), Al-Jabbar (The Restorer of the brokenhearted), As-Samee' (The All-Hearing)
 - Angry: Al-Haleem (The Forbearing), Al-Afuww (The Pardoner), Al-Sabur (The Patient)
-- Grateful / Happy: Al-Wahhab (The Bestower), Ash-Shakur (The Appreciative), Al-Kareem (The Generous)
+- Grateful / Content: Al-Wahhab (The Bestower), Ash-Shakur (The Appreciative), Al-Kareem (The Generous)
 - Confused: Al-Aleem (The All-Knowing), Al-Hakeem (The All-Wise), Al-Hadi (The Guide)
 - Hopeful: Al-Fattah (The Opener of doors), Al-Mujeeb (The Responder to prayers), Ar-Razzaq (The Provider)
 - Stressed: Al-Muqeet (The Sustainer), Al-Qawiyy (The Strong), Al-Lateef (The Subtle and Kind)
