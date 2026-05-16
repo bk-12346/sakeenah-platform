@@ -67,6 +67,78 @@ STRICT RULES:
 - Close warmly with a sense of completion
 - Do not say goodbye or farewell — the closing message appears automatically after you`;
 
+const GEMINI_MODEL = "gemini-2.5-flash-lite";
+
+type IncomingMessage = {
+  role?: string;
+  content?: unknown;
+};
+
+type GeminiContent = {
+  role: "user" | "model";
+  parts: { text: string }[];
+};
+
+type GeminiResponse = {
+  candidates?: {
+    content?: {
+      parts?: {
+        text?: string;
+      }[];
+    };
+  }[];
+};
+
+function contentToText(content: unknown): string {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (
+          part &&
+          typeof part === "object" &&
+          "text" in part &&
+          typeof part.text === "string"
+        ) {
+          return part.text;
+        }
+
+        return "";
+      })
+      .join("");
+  }
+
+  return "";
+}
+
+function toGeminiContents(messages: unknown): GeminiContent[] {
+  if (!Array.isArray(messages)) {
+    throw new Error("messages must be an array");
+  }
+
+  return (messages as IncomingMessage[])
+    .map((message) => {
+      const text = contentToText(message.content).trim();
+      if (!text) return null;
+
+      return {
+        role: message.role === "assistant" || message.role === "model" ? "model" : "user",
+        parts: [{ text }],
+      } satisfies GeminiContent;
+    })
+    .filter((message): message is GeminiContent => message !== null);
+}
+
+function extractGeminiText(data: GeminiResponse): string {
+  return data.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text ?? "")
+    .join("")
+    .trim() ?? "";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -74,8 +146,8 @@ serve(async (req) => {
 
   try {
     const { messages, turnNumber = 1 } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     // Select system prompt based on turn number
     let systemPrompt: string;
@@ -89,18 +161,18 @@ serve(async (req) => {
       systemPrompt = CLOSING_PROMPT;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const geminiContents = toGeminiContents(messages);
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        contents: geminiContents,
       }),
     });
 
@@ -118,12 +190,16 @@ serve(async (req) => {
         });
       }
       const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
-      throw new Error("AI gateway error");
+      console.error("Gemini API error:", response.status, text);
+      throw new Error("Gemini API error");
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
+    const data = await response.json() as GeminiResponse;
+    const content = extractGeminiText(data);
+
+    if (!content) {
+      throw new Error("Gemini returned no text");
+    }
 
     return new Response(JSON.stringify({ response: content }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
