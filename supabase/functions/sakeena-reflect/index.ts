@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const SYSTEM_PROMPT = `You are a warm, compassionate Islamic wellness companion within the Sakeena app. Your sole purpose is to respond to a user's journal entry with a supportive, grounding response rooted in tawakkul (trust in Allah) and Tawheed (the Oneness of Allah).
@@ -145,6 +146,28 @@ serve(async (req) => {
   }
 
   try {
+    const sessionId = req.headers.get("x-session-id");
+    if (!sessionId?.trim()) {
+      throw new Error("Missing session_id header");
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Supabase environment is not configured");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: req.headers.get("Authorization") ?? "",
+          "x-session-id": sessionId,
+        },
+      },
+    });
+
+    await supabase.rpc("set_request_session", { session_id: sessionId });
+
     const { messages, turnNumber = 1 } = await req.json();
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
