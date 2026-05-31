@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { externalSupabase } from "@/lib/supabase-external";
 import { getSessionId } from "@/lib/session";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -26,21 +25,10 @@ export default function JournalScreen({ onNavigateHome }: Props) {
 
   useEffect(() => {
     const fetchEntries = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      let query = externalSupabase
-        .from("entries")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (user) {
-        query = query.eq("user_id", user.id);
-      } else {
-        const sessionId = getSessionId();
-        query = query.eq("session_id", sessionId);
-      }
-
-      const { data, error } = await query;
+      const { data, error } = await supabase.rpc(
+        "get_session_entries" as never,
+        { p_session_id: getSessionId() } as never,
+      );
 
       if (!error && data) {
         setEntries(data as EntryRow[]);

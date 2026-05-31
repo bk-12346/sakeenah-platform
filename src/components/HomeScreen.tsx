@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { externalSupabase } from "@/lib/supabase-external";
-import { getSessionId } from "@/lib/session";
 import { type JournalEntry } from "@/lib/storage";
 
 const EMOTION_ROWS = [
@@ -17,6 +15,20 @@ const MAX_CHARS = 250;
 
 interface Props {
   onResponse: (entry: JournalEntry) => void;
+}
+
+async function getRateLimitMessage(error: unknown): Promise<string | null> {
+  if (!error || typeof error !== "object" || !("context" in error)) return null;
+
+  const { context } = error as { context?: unknown };
+  if (!(context instanceof Response) || context.status !== 429) return null;
+
+  try {
+    const body = await context.clone().json() as { error?: unknown };
+    return typeof body.error === "string" ? body.error : null;
+  } catch {
+    return null;
+  }
 }
 
 export default function HomeScreen({ onResponse }: Props) {
@@ -35,86 +47,33 @@ export default function HomeScreen({ onResponse }: Props) {
     setLoading(true);
     setError("");
 
-    const sessionId = getSessionId();
-
     try {
-      // Check if user is authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-
-      // Check daily usage limit
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-
-      let usageQuery = externalSupabase
-        .from("usage_log")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", todayStart.toISOString());
-
-      if (user) {
-        usageQuery = usageQuery.eq("user_id", user.id);
-      } else {
-        usageQuery = usageQuery.eq("session_id", sessionId);
-      }
-
-      const { count, error: sessionErr } = await usageQuery;
-
-      if (sessionErr) throw sessionErr;
-
-      if ((count ?? 0) >= 1) {
-        setError("You have already reflected today. Come back tomorrow — rest is part of tawakkul.");
-        setLoading(false);
-        return;
-      }
-
       const userMessage = `Journal entry: ${thought.trim()}\n\nEmotion labels: ${emotions.length ? emotions.join(", ") : "None provided"}`;
 
       const initialMessages = [{ role: "user" as const, content: userMessage }];
 
-      const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect", {
-        body: { messages: initialMessages, turnNumber: 1 },
+      const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect-v2", {
+        body: {
+          messages: initialMessages,
+          turnNumber: 1,
+          entryText: thought.trim(),
+          emotionLabels: emotions,
+        },
       });
 
-      if (fnError) throw fnError;
+      if (fnError) {
+        const rateLimitMessage = await getRateLimitMessage(fnError);
+        if (rateLimitMessage) {
+          setError(rateLimitMessage);
+          return;
+        }
+
+        throw fnError;
+      }
 
       const responseText = data?.response || data?.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
 
-      // Insert entry with user_id or session_id based on auth state
-      const entryInsert: Record<string, unknown> = {
-        entry_text: thought.trim(),
-        emotion_labels: emotions,
-        ai_response: responseText,
-        messages: [...initialMessages, { role: "assistant", content: responseText }],
-        turn_count: 1,
-        status: "active",
-      };
-
-      if (user) {
-        entryInsert.user_id = user.id;
-        entryInsert.session_id = null;
-      } else {
-        entryInsert.user_id = null;
-        entryInsert.session_id = sessionId;
-      }
-
-      const { data: insertedEntry, error: insertErr } = await externalSupabase
-        .from("entries")
-        .insert(entryInsert)
-        .select("id")
-        .single();
-
-      if (insertErr) throw insertErr;
-
-      // Insert usage log
-      const usageInsert: Record<string, unknown> = {};
-      if (user) {
-        usageInsert.user_id = user.id;
-        usageInsert.session_id = null;
-      } else {
-        usageInsert.user_id = null;
-        usageInsert.session_id = sessionId;
-      }
-
-      await externalSupabase.from("usage_log").insert(usageInsert);
+      if (!data?.entryId) throw new Error("Missing entry ID");
 
       const messagesWithResponse = [
         ...initialMessages,
@@ -122,7 +81,7 @@ export default function HomeScreen({ onResponse }: Props) {
       ];
 
       const entry: JournalEntry = {
-        id: insertedEntry?.id || crypto.randomUUID(),
+        id: data.entryId,
         thought: thought.trim(),
         emotions,
         response: responseText,

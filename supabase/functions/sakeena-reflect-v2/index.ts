@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Versioned transactional persistence endpoint.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session-id, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -73,6 +74,14 @@ const GEMINI_MODEL = "gemini-2.5-flash-lite";
 type IncomingMessage = {
   role?: string;
   content?: unknown;
+};
+
+type ReflectRequest = {
+  messages?: unknown;
+  turnNumber?: unknown;
+  entryId?: unknown;
+  entryText?: unknown;
+  emotionLabels?: unknown;
 };
 
 type GeminiContent = {
@@ -166,25 +175,87 @@ serve(async (req) => {
       },
     });
 
-    await supabase.rpc("set_request_session", { session_id: sessionId });
+    const {
+      messages,
+      turnNumber,
+      entryId,
+      entryText,
+      emotionLabels = [],
+    } = await req.json() as ReflectRequest;
 
-    const { messages, turnNumber = 1 } = await req.json();
+    if (!Number.isInteger(turnNumber) || (turnNumber as number) < 1 || (turnNumber as number) > 4) {
+      throw new Error("Invalid turn number");
+    }
+
+    if (!Array.isArray(messages)) {
+      throw new Error("messages must be an array");
+    }
+
+    if (entryId !== undefined && entryId !== null && typeof entryId !== "string") {
+      throw new Error("Invalid entry ID");
+    }
+
+    if (!Array.isArray(emotionLabels) || !emotionLabels.every((label) => typeof label === "string")) {
+      throw new Error("emotionLabels must be an array of strings");
+    }
+
+    const normalizedEntryId = typeof entryId === "string" && entryId.trim() ? entryId : null;
+    const normalizedTurnNumber = turnNumber as number;
+
+    if (normalizedTurnNumber === 1) {
+      if (normalizedEntryId) {
+        throw new Error("Initial reflection must not include an entry ID");
+      }
+
+      if (typeof entryText !== "string" || !entryText.trim()) {
+        throw new Error("Missing entry text");
+      }
+    } else if (!normalizedEntryId) {
+      throw new Error("Missing entry ID");
+    }
+
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     // Select system prompt based on turn number
     let systemPrompt: string;
-    if (turnNumber === 1) {
+    if (normalizedTurnNumber === 1) {
       systemPrompt = SYSTEM_PROMPT;
-    } else if (turnNumber === 2 || turnNumber === 3) {
+    } else if (normalizedTurnNumber === 2 || normalizedTurnNumber === 3) {
       systemPrompt = CONVERSATIONAL_PROMPT;
-    } else if (turnNumber === 4) {
+    } else if (normalizedTurnNumber === 4) {
       systemPrompt = CLOSING_PROMPT;
     } else {
       systemPrompt = CLOSING_PROMPT;
     }
 
     const geminiContents = toGeminiContents(messages);
+    const latestUserMessage = [...geminiContents]
+      .reverse()
+      .find((message) => message.role === "user")
+      ?.parts.map((part) => part.text)
+      .join("")
+      .trim();
+
+    if (!latestUserMessage) {
+      throw new Error("Missing user message");
+    }
+
+    if (normalizedTurnNumber === 1) {
+      const { data: canStart, error: canStartError } = await supabase.rpc(
+        "can_start_daily_reflection",
+        { p_session_id: sessionId },
+      );
+
+      if (canStartError) throw canStartError;
+
+      if (!canStart) {
+        return new Response(JSON.stringify({ error: "You have already reflected today. Come back tomorrow — rest is part of tawakkul." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
@@ -224,7 +295,23 @@ serve(async (req) => {
       throw new Error("Gemini returned no text");
     }
 
-    return new Response(JSON.stringify({ response: content }), {
+    const updatedMessages = [...messages, { role: "assistant", content }];
+    const { data: persistedEntryId, error: persistError } = await supabase.rpc(
+      "persist_reflection_exchange",
+      {
+        p_session_id: sessionId,
+        p_entry_id: normalizedEntryId,
+        p_entry_text: normalizedTurnNumber === 1 ? (entryText as string).trim() : latestUserMessage,
+        p_emotion_labels: normalizedTurnNumber === 1 ? emotionLabels : [],
+        p_ai_response: content,
+        p_messages: updatedMessages,
+        p_turn_number: normalizedTurnNumber,
+      },
+    );
+
+    if (persistError) throw persistError;
+
+    return new Response(JSON.stringify({ response: content, entryId: persistedEntryId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

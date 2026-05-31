@@ -1,4 +1,10 @@
-project_id = "mqdhvfojdutetaizkrld"
+project_id = "cyfslxhnkfglgpcxoycn"
 
 [functions.sakeena-reflect]
+verify_jwt = false
+
+[functions.sakeena-reflect-v2]
+verify_jwt = false
+
+[functions.claim-anonymous-session]
 verify_jwt = false

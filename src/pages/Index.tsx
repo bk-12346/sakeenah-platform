@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { externalSupabase } from "@/lib/supabase-external";
 import { isOnboardingDone, type JournalEntry } from "@/lib/storage";
-import { getSessionId } from "@/lib/session";
 import Onboarding from "@/components/Onboarding";
 import HomeScreen from "@/components/HomeScreen";
 import ResponseScreen from "@/components/ResponseScreen";
@@ -26,9 +24,14 @@ const Index = () => {
   useEffect(() => {
     let resolved = false;
 
-    const resolve = (currentUser: User | null) => {
+    const resolve = async (currentUser: User | null) => {
       if (resolved) return;
       resolved = true;
+
+      if (currentUser) {
+        await migrateAnonymousData(currentUser.id);
+      }
+
       setUser(currentUser);
       if (currentUser) {
         setShowOnboarding(false);
@@ -40,12 +43,12 @@ const Index = () => {
     };
 
     // Timeout fallback: default to unauthenticated after 2 seconds
-    const timer = setTimeout(() => resolve(null), 2000);
+    const timer = setTimeout(() => void resolve(null), 2000);
 
     // Check existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       clearTimeout(timer);
-      resolve(session?.user ?? null);
+      void resolve(session?.user ?? null);
     });
 
     // Listen for future auth changes (sign in, sign out)
@@ -57,13 +60,16 @@ const Index = () => {
         return;
       }
 
-      setUser(currentUser);
-
       if (event === "SIGNED_IN" && currentUser) {
-        migrateAnonymousData(currentUser.id);
-        setShowOnboarding(false);
-        setScreen("home");
-        setAuthLoading(false);
+        setAuthLoading(true);
+        setTimeout(() => {
+          void migrateAnonymousData(currentUser.id).finally(() => {
+            setUser(currentUser);
+            setShowOnboarding(false);
+            setScreen("home");
+            setAuthLoading(false);
+          });
+        }, 0);
       }
 
       if (event === "SIGNED_OUT") {
@@ -80,24 +86,14 @@ const Index = () => {
 
   const migrateAnonymousData = async (userId: string) => {
     try {
-      const sessionId = getSessionId();
+      const { error } = await supabase.functions.invoke("claim-anonymous-session");
+      if (error) throw error;
 
-      // Migrate entries: update anonymous rows to belong to the authenticated user
-      await externalSupabase
-        .from("entries")
-        .update({ user_id: userId, session_id: null })
-        .eq("session_id", sessionId)
-        .is("user_id", null);
-
-      // Migrate usage_log similarly
-      await externalSupabase
-        .from("usage_log")
-        .update({ user_id: userId, session_id: null })
-        .eq("session_id", sessionId)
-        .is("user_id", null);
-
-      // Mark onboarding as completed in profile
-      await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId);
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ onboarding_completed: true })
+        .eq("id", userId);
+      if (profileError) throw profileError;
 
       // Clear localStorage entries after migration
       localStorage.removeItem("sakeena_entries");
@@ -114,7 +110,7 @@ const Index = () => {
   const handleEntryUpdate = (updatedEntry: JournalEntry) => {
     setLastEntry(updatedEntry);
 
-    if (updatedEntry.status === "complete" && !user) {
+    if (updatedEntry.status === "completed" && !user) {
       setTimeout(() => setScreen("signup"), 2000);
     }
   };
@@ -125,7 +121,7 @@ const Index = () => {
   };
 
   const handleSignInSuccess = () => {
-    setScreen("home");
+    setAuthLoading(true);
   };
 
   if (authLoading) {
