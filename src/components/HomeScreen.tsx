@@ -137,7 +137,7 @@ export default function HomeScreen({ onResponse }: Props) {
         What feels closest right now?
       </p>
 
-      <div className="grid grid-cols-4 gap-x-1 gap-y-3 mt-2">
+      <div className="flex flex-wrap justify-center gap-x-2 gap-y-3 mt-2">
         {EMOTION_ROWS.map((row) =>
           row.map((e) => {
             const isActive = emotions.includes(e);
@@ -146,7 +146,7 @@ export default function HomeScreen({ onResponse }: Props) {
               <button
                 key={e}
                 onClick={() => toggleEmotion(e)}
-                className={`chip min-w-[88px] px-5 text-center justify-self-center whitespace-nowrap ${isActive ? `chip-active ${isTerracotta ? 'chip-active-terracotta' : 'chip-active-rose'}` : ""}`}
+                className={`chip min-w-[104px] px-3 text-center whitespace-nowrap ${isActive ? `chip-active ${isTerracotta ? 'chip-active-terracotta' : 'chip-active-rose'}` : ""}`}
               >
                 {e}
               </button>
