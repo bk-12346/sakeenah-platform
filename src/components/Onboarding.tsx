@@ -63,7 +63,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
           style={{
             fontSize: '13px',
             lineHeight: '1.8',
-            color: 'rgba(255, 248, 242, 0.36)',
+            color: 'rgba(255, 248, 242, 0.50)',
             marginBottom: '26px',
           }}
         >
@@ -92,7 +92,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
           style={{
             fontSize: '11px',
             lineHeight: '1.8',
-            color: 'rgba(255, 248, 242, 0.26)',
+            color: 'rgba(255, 248, 242, 0.38)',
             marginTop: '28px',
           }}
         >
