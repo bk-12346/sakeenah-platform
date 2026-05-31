@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sakeenah v1 - Revisions and Next Steps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Lora:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #FDF6F0;
+      --surface: #FFFAF7;
+      --ink: #2C1810;
+      --muted: rgba(44, 24, 16, 0.58);
+      --border: #E8D5C8;
+      --rose: #C17C74;
+      --rose-deep: #A85E56;
+      --rose-soft: #F5E0DC;
+      --green-soft: #EBF2EC;
+      --green: #4A7A51;
+      --gold-soft: #F7EDD8;
+      --gold: #8A6A2A;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Lora", serif;
+      line-height: 1.7;
+    }
+
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 56px 24px 88px;
+    }
+
+    header {
+      text-align: center;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+
+    h1, h2 {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-weight: 300;
+      margin: 0;
+    }
+
+    h1 { font-size: 48px; line-height: 1.05; }
+    h2 { font-size: 30px; margin-bottom: 12px; }
+    h3 { font-size: 15px; margin: 0 0 6px; font-weight: 500; }
+    p { margin: 0 0 10px; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      margin: 14px 0;
+    }
+
+    .north-star {
+      text-align: center;
+      background: linear-gradient(135deg, #FFFAF7, #F8E9E4);
+      border-color: rgba(193, 124, 116, 0.35);
+      padding: 30px 24px;
+    }
+
+    .north-star strong {
+      display: block;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 30px;
+      font-style: italic;
+      font-weight: 300;
+      margin-bottom: 4px;
+    }
+
+    .section { margin-top: 38px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 10px;
+      background: var(--rose-soft);
+      color: var(--rose-deep);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .done { background: var(--green-soft); color: var(--green); }
+    .later { background: var(--gold-soft); color: var(--gold); }
+
+    ul, ol { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 5px 0; }
+
+    .week {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .week-num {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--rose);
+      color: white;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 20px;
+    }
+
+    .quote {
+      margin-top: 12px;
+      border-left: 2px solid var(--rose);
+      padding: 10px 14px;
+      background: #FAF3EE;
+      color: var(--rose-deep);
+      font-style: italic;
+    }
+
+    .footer {
+      margin-top: 50px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 680px) {
+      main { padding: 38px 18px 64px; }
+      h1 { font-size: 38px; }
+      .grid { grid-template-columns: 1fr; }
+      .week { grid-template-columns: 44px 1fr; gap: 12px; }
+      .week-num { width: 36px; height: 36px; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Sakeenah v1 Revisions</h1>
+      <p class="subtitle">A focused 12-week product plan for a private, faith-native reflection web app.</p>
+    </header>
+
+    <section class="card north-star">
+      <strong>North Star: make users come back tomorrow.</strong>
+      <p>Judge the next phase by trust, emotional value, and retention rather than feature count.</p>
+    </section>
+
+    <section class="section">
+      <h2>Current production state</h2>
+      <div class="grid">
+        <article class="card">
+          <span class="pill done">Live</span>
+          <h3>Responsive web app on Vercel</h3>
+          <p>Sakeenah is deployed through GitHub and Vercel. Preview deployments are tested before merging into production.</p>
+        </article>
+        <article class="card">
+          <span class="pill done">Live</span>
+          <h3>Private reflection persistence</h3>
+          <p>Supabase stores entries and paired conversation turns transactionally with strict session isolation.</p>
+        </article>
+        <article class="card">
+          <span class="pill done">Live</span>
+          <h3>Daily intentional limit</h3>
+          <p>Anonymous and authenticated users can begin one reflection per UTC day and complete four guided exchanges.</p>
+        </article>
+        <article class="card">
+          <span class="pill done">Live</span>
+          <h3>Account recovery flow</h3>
+          <p>After verified sign-in, anonymous entries, usage, and conversation turns move safely into the user's journal.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Immediate corrections</h2>
+      <article class="card">
+        <ol>
+          <li>Rewrite onboarding copy so it clearly explains the private daily reflection model.</li>
+          <li>Replace absolute privacy claims with technically accurate wording.</li>
+          <li>Polish the completion state so the user is guided toward the journal rather than a rejected second entry.</li>
+          <li>Add an explicit journal error state so failed reads do not look like data loss.</li>
+          <li>Test the responsive web app in mobile browsers, especially with the keyboard open.</li>
+          <li>Add deterministic crisis screening before AI generation as a safety hardening step.</li>
+        </ol>
+      </article>
+      <div class="quote">
+        Your reflections are stored privately and securely. They are used only to generate your responses and are never sold or shared for advertising.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Focused 12-week roadmap</h2>
+      <article class="card week"><div class="week-num">1</div><div><h3>Trust-copy rewrite</h3><p>Rewrite onboarding around emotional promise, one intentional reflection per day, and accurate privacy language.</p></div></article>
+      <article class="card week"><div class="week-num">2</div><div><h3>Completion UX polish</h3><p>Make the fourth-turn ending feel intentional. Guide users toward their journal and tomorrow's reflection.</p></div></article>
+      <article class="card week"><div class="week-num">3</div><div><h3>Hardening pass</h3><p>Add journal error handling, responsive browser checks, RLS regression checks, and deterministic crisis screening.</p></div></article>
+      <article class="card week"><div class="week-num">4</div><div><h3>Retention baseline</h3><p>Track Day-1 and Day-7 return behavior, completed reflections, signup conversion, and common emotional categories.</p></div></article>
+      <article class="card week"><div class="week-num">5</div><div><h3>Memory v1</h3><p>Pass the authenticated user's last one to three reflections into the initial response context. Avoid embeddings and vector databases.</p></div></article>
+      <article class="card week"><div class="week-num">6</div><div><h3>Follow-up quality</h3><p>Use feedback to improve short faith-native follow-up questions and remove generic wellness suggestions.</p></div></article>
+      <article class="card week"><div class="week-num">7</div><div><h3>Journal journey redesign</h3><p>Make journal cards easier to scan and let users expand the full reflection thread.</p></div></article>
+      <article class="card week"><div class="week-num">8</div><div><h3>User interviews</h3><p>Talk to 10-15 users. Identify what felt meaningful, generic, confusing, or worth returning for.</p></div></article>
+      <article class="card week"><div class="week-num">9</div><div><h3>Ask Sakeenah</h3><p>Add simple questions over recent journal history to create a useful feeling of continuity.</p></div></article>
+      <article class="card week"><div class="week-num">10</div><div><h3>Weekly reflection summary</h3><p>Generate a gentle weekly mirror for users with at least two reflections that week.</p></div></article>
+      <article class="card week"><div class="week-num">11</div><div><h3>Soft paywall copy</h3><p>Test a premium explanation around memory, weekly summaries, Ask Sakeenah, and archive access without integrating payments yet.</p></div></article>
+      <article class="card week"><div class="week-num">12</div><div><h3>Metrics review</h3><p>Review retention and qualitative feedback. Decide whether payments or further core-loop improvements are justified.</p></div></article>
+    </section>
+
+    <section class="section">
+      <h2>Defer until retention proves the need</h2>
+      <article class="card">
+        <span class="pill later">Later</span>
+        <ul>
+          <li>Native mobile app and PWA installation</li>
+          <li>Anthropic migration</li>
+          <li>Community features</li>
+          <li>Audio responses and voice input</li>
+          <li>Prayer-time notifications</li>
+          <li>Therapist directory or marketplace</li>
+          <li>Payment integration and large content libraries</li>
+        </ul>
+      </article>
+    </section>
+
+    <div class="footer">Sakeenah v1 revisions - retention-first execution for a responsive web app.</div>
+  </main>
+</body>
+</html>

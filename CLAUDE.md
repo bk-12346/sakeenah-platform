@@ -1,213 +1,179 @@
-# Sakeenah — Project Intelligence
+# Sakeenah - Project Intelligence
 
-## What this product is
+## Product
 
-Sakeenah is an Islamic wellness journalling app grounded in tawakkul (trust in Allah). Users write journal entries, select their emotional state, and receive a warm AI-generated reflection rooted in Quranic verses, the Names of Allah, and authenticated Hadith. After the initial response, users can continue a short conversation — capped at 3 to 4 exchanges — before the session closes. The product is built for Muslims of all ages and genders globally, with English as the primary language.
+Sakeenah is a private, faith-native reflection web app for Muslims of all ages and genders. Users write one reflection per day, optionally select emotions, receive an AI-generated response rooted in tawakkul, and continue a short guided conversation.
 
-This is a startup. Every build decision should prioritise user trust, privacy, emotional safety, and retention.
+This is an emotionally sensitive product. Every change should prioritize user trust, privacy, emotional safety, authenticity of Islamic references, and retention.
 
----
+Sakeenah is a responsive web app deployed on Vercel. It is not currently a native mobile app or PWA.
 
-## Tech stack
+## Current Stack
 
-- **Framework:** React 18 with TypeScript
-- **Build tool:** Vite
-- **Styling:** Tailwind CSS with shadcn/ui components
-- **Backend:** Supabase (auth, database, edge functions)
-- **AI:** Anthropic Claude via Supabase edge function (`supabase/functions/sakeena-reflect/index.ts`)
-- **Routing:** Single page app — screen state managed in `src/pages/Index.tsx`
-- **Storage:** Supabase database (migrating from localStorage)
-- **Fonts:** Cormorant Garamond (display, italic) and Lora (body) from Google Fonts
+- Frontend: React 18, TypeScript, Vite
+- Styling: Tailwind CSS and shadcn/ui
+- Backend: Supabase Auth, Postgres, RLS, RPCs, and Edge Functions
+- AI provider: Gemini through Supabase Edge Functions
+- Deployment: GitHub branches, Vercel Preview deployments, and Vercel production from `main`
+- Fonts: Cormorant Garamond for display text and Lora for body text
 
----
+Do not migrate AI providers unless explicitly requested. Anthropic migration is deferred until retention or paid usage justifies it.
 
-## Project structure
+## Current Architecture
 
+### Frontend
+
+- `src/pages/Index.tsx`: root SPA screen state and auth transition handling
+- `src/components/HomeScreen.tsx`: daily reflection input and emotion selection
+- `src/components/ResponseScreen.tsx`: AI response and follow-up conversation
+- `src/components/JournalScreen.tsx`: journal history read through an RPC
+- `src/components/Onboarding.tsx`: three-screen onboarding flow
+- `src/lib/session.ts`: anonymous browser session ID stored as `sakeenah_session_id`
+- `src/integrations/supabase/client.ts`: Supabase browser client
+- `src/integrations/supabase/types.ts`: generated Supabase types
+
+### Supabase Edge Functions
+
+- `sakeena-reflect-v2`: production reflection endpoint
+  - Reads `x-session-id`
+  - Uses the incoming authorization header
+  - Calls Gemini
+  - Persists exchanges through `persist_reflection_exchange`
+  - Returns `response` and `entryId`
+- `claim-anonymous-session`: authenticated account-claim endpoint
+  - Requires a valid authenticated user
+  - Claims the exact anonymous browser session
+  - Calls `claim_anonymous_session`
+- `sakeena-reflect`: legacy v1 compatibility endpoint
+  - Keep active temporarily
+  - Do not add new features to v1
+  - Retire only after logs confirm it is no longer needed
+
+### Database
+
+Current tables:
+
+- `entries`
+  - Stores the reflection, AI response, conversation messages, status, turn count, completion timestamp, and either anonymous `session_id` or authenticated `user_id`
+- `conversation_turns`
+  - Stores each user and assistant message
+  - A user and assistant message in the same exchange share one `turn_number`
+- `usage_log`
+  - Enforces one initial reflection per owner per UTC day
+- `profiles`
+  - Stores authenticated profile state
+
+Current RPCs:
+
+- `set_request_session(session_id text)`
+- `can_start_daily_reflection(p_session_id text)`
+- `get_session_entries(p_session_id text)`
+- `persist_reflection_exchange(...)`
+- `claim_anonymous_session(p_session_id text)`
+
+Reflection persistence belongs inside transactional RPCs. Do not add direct frontend inserts or updates to `entries`, `conversation_turns`, or `usage_log`.
+
+## Auth And Session Behavior
+
+- Anonymous users receive a browser session ID stored in localStorage.
+- Anonymous users can complete one full daily reflection before signup.
+- A reflection contains four exchanges maximum.
+- After an anonymous reflection completes, the app prompts the user to create an account.
+- Auth uses Supabase email and password with email verification.
+- After verified sign-in, `claim-anonymous-session` atomically claims anonymous `entries`, `usage_log`, and `conversation_turns`.
+- Returning authenticated users can view their journal and remain subject to the daily limit.
+
+## Product Rules - Never Violate
+
+- Allow one initial reflection per owner per UTC day.
+- Cap the conversation at four user/assistant exchanges.
+- Use status value `"completed"`, never `"complete"`.
+- Both messages in one exchange must share the same `turn_number`.
+- Never fabricate Quranic verses or Hadith.
+- Never claim that Sakeenah is a therapist, counsellor, or medical professional.
+- Crisis-related language must return a crisis-support response instead of a standard reflection.
+- Keep journal entries private. Preserve strict RLS and session isolation.
+- Do not add points, punitive streaks, leaderboards, or anxiety-inducing gamification.
+- Privacy copy must be technically accurate. Do not claim that nobody can read stored reflections.
+
+Recommended privacy wording:
+
+> Your reflections are stored privately and securely. They are used only to generate your responses and are never sold or shared for advertising.
+
+## Design System
+
+### Colors
+
+```text
+Background:     #FDF6F0
+Surface:        #FFFAF7
+Primary text:   #2C1810
+Muted text:     rgba(44, 24, 16, 0.45)
+Border:         #E8D5C8
+Rose accent:    #C17C74
+Rose deep:      #A85E56
+Highlight bg:   #FAF3EE
 ```
-src/
-  components/
-    HomeScreen.tsx        — journal entry input and emotion selection
-    ResponseScreen.tsx    — AI response display and conversational follow-up
-    JournalScreen.tsx     — journal history list
-    Onboarding.tsx        — 3-slide onboarding flow
-    NavLink.tsx           — navigation component
-    ui/                   — shadcn/ui base components (do not modify these)
-  pages/
-    Index.tsx             — root component, screen state management
-    NotFound.tsx
-  lib/
-    storage.ts            — localStorage helpers (being replaced by Supabase)
-    session.ts            — session management
-    supabase-external.ts  — Supabase client helpers
-    utils.ts              — shared utilities
-  integrations/
-    supabase/
-      client.ts           — Supabase client initialisation
-      types.ts            — generated Supabase types
-supabase/
-  functions/
-    sakeena-reflect/
-      index.ts            — AI edge function (Deno runtime)
-```
 
----
+### Typography And Layout
 
-## Design system
+- Display font: Cormorant Garamond, usually italic and weight 300 or 400
+- Body font: Lora, weight 400 or 500
+- Maximum content width: `420px`
+- Mobile-first responsive web layout
+- Cards and inputs: `12px` border radius
+- Primary buttons and emotion chips: pill shape
+- Borders: subtle `0.5px` or `1px`
 
-### Colours
+Do not modify files under `src/components/ui/` unless explicitly requested.
 
-```
-Background:     #FDF6F0   (warm cream — page background)
-Surface:        #FFFAF7   (slightly lighter — cards and inputs)
-Navy:           #2C1810   (primary text and dark buttons)
-Muted:          rgba(44, 24, 16, 0.45)  (secondary text)
-Border:         #E8D5C8   (default borders)
-Border light:   #EAD9CE   (subtle borders)
-Rose:           #C17C74   (primary accent — active states, dots, tags)
-Rose deep:      #A85E56   (text on rose backgrounds)
-Rose bg:        #F5E0DC   (rose tag background)
-Button dark:    #2C1810   (primary CTA background)
-Button text:    #FDF6F0   (text on dark buttons)
-Input bg:       #FFFFFF   (white input fields)
-Highlight bg:   #FAF3EE   (soft highlight — AI question cards)
-```
+## Deployment Workflow
 
-### Typography
+1. Work locally on a feature branch.
+2. Run build, tests, focused lint, and `git diff --check`.
+3. Push the branch to GitHub.
+4. Validate the Vercel Preview deployment.
+5. Merge the pull request into `main`.
+6. Validate the Vercel production deployment.
 
-```
-Display font:   'Cormorant Garamond', serif — italic, weight 300 or 400
-                Used for: app name, screen headings, Quranic Arabic text
-Body font:      'Lora', serif — weight 400 or 500
-                Used for: all body text, labels, buttons, tags
-```
+Supabase migrations and Edge Functions are deployed separately from the Vercel frontend. Do not apply migrations or deploy services unless explicitly authorized.
 
-Never use system fonts or sans-serif fonts anywhere in the UI. Every text element uses either Cormorant Garamond or Lora.
+## Current Priorities
 
-### Spacing and layout
+1. Rewrite onboarding trust copy.
+2. Polish the completed-reflection experience.
+3. Add journal error handling and test responsive web behavior.
+4. Measure retention manually and interview users.
+5. Add Memory v1 using the last one to three authenticated journal entries.
+6. Improve follow-up prompt quality from real feedback.
+7. Redesign journal history around the user's journey.
+8. Add Ask Sakeenah over recent entries.
+9. Add weekly summaries if Memory v1 proves useful.
+10. Test soft paywall copy before integrating payments.
 
-- Max content width: 420px centred
-- Page padding: 24px horizontal
-- Border radius on cards: 12px
-- Border radius on buttons: 100px (pill shape)
-- Border radius on emotion tags: 100px (pill shape)
-- Border radius on input fields: 12px
-- All borders: 0.5px or 1px solid, never thicker
-- Inputs have a white background with a subtle rose-tinted border on focus
+## Deferred Features
 
-### Component conventions
+Do not prioritize these until retention evidence justifies them:
 
-- Primary CTA buttons: dark navy background (#2C1810), cream text (#FDF6F0), pill shape, full width
-- Emotion tags: white background, navy border (0.5px), navy text when unselected; rose background (#C17C74), white text when selected
-- AI response: displayed with a left border accent (1.5px, #E2CFC5), Lora body text at 13px, line height 1.75
-- Quranic Arabic text: Cormorant Garamond italic, slightly larger than body text, muted navy colour
-- Follow-up question from AI: displayed in a soft highlight card (#FAF3EE), with a small label "Sakeenah asks" above it
-- Conversation turn counter: small Lora text, centred, muted — "1 of 4 reflections remaining"
+- Native mobile app
+- PWA installation
+- Anthropic migration
+- Community features
+- Audio responses
+- Voice input
+- Prayer-time notifications
+- Therapist marketplace or directory
+- Payment integration
+- Large content libraries
 
----
+## Coding Conventions
 
-## Product rules — never violate these
-
-- The conversational follow-up after an initial journal response is capped at **3 to 4 exchanges maximum**. Do not make this unlimited or configurable beyond this range.
-- The AI must never claim to be a therapist, counsellor, or medical professional.
-- The AI must never fabricate Quranic verses or Hadith.
-- If a user's entry suggests self-harm or crisis, the edge function returns a crisis resource message only — no standard reflection.
-- Journal entries and all user data are private. Row-level security must be enabled on all Supabase tables. No user can access another user's data.
-- The onboarding privacy slide must accurately reflect how data is stored. Currently: "Your thoughts are encrypted and stored securely. They are never read, shared, or sold — not by us, not by anyone."
-- Do not add any gamification elements (points, streaks with penalties, leaderboards). Gentle progress indicators are acceptable but must never create anxiety about missing a day.
-
----
-
-## Database schema
-
-**Supabase project:** `zwphhjpobrxhwndtlutg`
-
-### Current tables (Supabase)
-
-**entries**
-- `id` uuid (primary key)
-- `session_id` text (anonymous session identifier — being replaced by user_id)
-- `entry_text` text
-- `emotion_labels` text[]
-- `ai_response` text
-- `created_at` timestamptz
-
-**usage_log**
-- `id` uuid (primary key)
-- `session_id` text
-- `created_at` timestamptz
-
-### Planned additions (do not build yet, just be aware)
-
-- `user_id` uuid references auth.users — to be added to both tables when auth is implemented
-- `profiles` table — for storing display name, onboarding completion, subscription status
-- `conversation_turns` table — for storing the 3 to 4 follow-up exchanges per session
-
----
-
-## Auth
-
-- Provider: Supabase Auth
-- Method: Email and password only — no social login
-- Email confirmation: enabled
-- New users must verify their email before accessing the app
-- The sign up prompt appears after a user completes their first full conversation (all 4 exchanges)
-- Anonymous users can complete one full conversation before being prompted to sign up
-- On sign up, the anonymous session data should be migrated to the new user account
-- Returning authenticated users go straight to the home screen
-- The auth screens must follow the CLAUDE.md design system exactly — same fonts, colours, and component conventions
-
----
-
-## AI edge function
-
-**Location:** `supabase/functions/sakeena-reflect/index.ts`
-
-**Runtime:** Deno
-
-**Current model:** Being migrated from Lovable's AI gateway (Gemini) to Anthropic's API directly. When updating this function, use the Anthropic Messages API with `claude-sonnet-4-5` as the model. Use `ANTHROPIC_API_KEY` as the environment variable name.
-
-**System prompt:** The system prompt is long and carefully crafted — do not rewrite or summarise it. Only edit the specific parts requested. It includes emotional state guidance, strict Islamic content rules, crisis detection logic, and response structure requirements.
-
-**Response length:** The AI response must be 100 to 150 words. This is a product requirement, not a suggestion.
-
----
-
-## Current build priorities (in order)
-
-1. ✅ UI redesign — complete
-2. ✅ Empty journal state — complete
-3. ✅ Conversational follow-up — complete
-4. ✅ Supabase auth — complete
-5. Migrate storage from localStorage to Supabase database
-6. Reflections counter
-7. Paywall
-8. Daily content
-9. PWA
-10. Anthropic migration — when paying customers justify it
-
----
-
-## Coding conventions
-
-- Use TypeScript strictly — no `any` types
-- Use functional React components only — no class components
-- Use Tailwind utility classes for layout and spacing
-- Use inline styles only for brand colours and custom values not available in Tailwind
-- Do not install new npm packages without explaining why they are needed and getting approval
-- Do not modify files in `src/components/ui/` — these are shadcn/ui base components
-- Do not rewrite working code that is not related to the current task
-- Always consider mobile first — the app is designed for 420px max width
-- When editing a component, read the full file before making changes
-- Commit-ready code only — no console.log statements left in production code
-
----
-
-## Key product context for AI prompting
-
-When writing prompts for Claude Code or Cursor, always reference this file. The model should understand:
-
-- This is an emotionally sensitive product for people processing anxiety, grief, stress, and spiritual struggle
-- Every UI decision should feel calm, intentional, and trustworthy
-- The typography and colour palette are non-negotiable — they are part of the product identity
-- The Islamic content must be authentic, never decorative
-- Privacy is a core feature, not a legal checkbox
+- Read the full affected file before editing.
+- Keep changes closely scoped.
+- Do not refactor working code unless explicitly requested.
+- Use strict TypeScript and functional React components.
+- Do not install packages without approval.
+- Do not manually edit generated Supabase types. Regenerate them after schema changes.
+- Do not print `.env` values or secrets.
+- Use product copy suitable for Muslims of all ages and genders.
+- Leave the repository commit-ready.
