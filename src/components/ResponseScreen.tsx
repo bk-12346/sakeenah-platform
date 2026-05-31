@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { externalSupabase } from "@/lib/supabase-external";
 import { type JournalEntry, type ConversationMessage } from "@/lib/storage";
 import ReactMarkdown from "react-markdown";
 
@@ -44,17 +43,18 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
   const exchangesRemaining = 4 - entry.turnCount;
 
   const sendReply = async () => {
-    if (!replyText.trim() || loading || entry.status === "complete") return;
+    if (!replyText.trim() || loading || entry.status === "completed") return;
     setLoading(true);
     setError("");
 
     try {
       const newUserMessage: ConversationMessage = { role: "user", content: replyText.trim() };
       const updatedMessages = [...entry.messages, newUserMessage];
-      const nextTurn = entry.turnCount + 1;
+      const currentTurn = entry.turnCount || 0;
+      const nextTurn = currentTurn + 1;
 
-      const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect", {
-        body: { messages: updatedMessages, turnNumber: nextTurn },
+      const { data, error: fnError } = await supabase.functions.invoke("sakeena-reflect-v2", {
+        body: { entryId: entry.id, messages: updatedMessages, turnNumber: nextTurn },
       });
 
       if (fnError) throw fnError;
@@ -63,17 +63,7 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
 
       const aiResponse: ConversationMessage = { role: "assistant", content: responseText };
       const finalMessages = [...updatedMessages, aiResponse];
-      const newStatus = nextTurn >= 4 ? "complete" : "active";
-
-      // Persist conversation state to database
-      await externalSupabase
-        .from("entries")
-        .update({
-          messages: finalMessages as unknown as Record<string, unknown>[],
-          turn_count: nextTurn,
-          status: newStatus,
-        })
-        .eq("id", entry.id);
+      const newStatus = nextTurn >= 4 ? "completed" : "active";
 
       const updatedEntry: JournalEntry = {
         ...entry,
@@ -371,7 +361,7 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
         )}
 
         {/* 6. COMPLETION MESSAGE (when conversation is complete) */}
-        {entry.status === "complete" && (
+        {entry.status === "completed" && (
           <p
             className="font-body text-center"
             style={{

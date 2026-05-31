@@ -10,7 +10,7 @@ export interface JournalEntry {
   response: string;
   messages: ConversationMessage[];
   turnCount: number;
-  status: "active" | "complete";
+  status: "active" | "completed";
   createdAt: string;
 }
 
