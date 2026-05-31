@@ -5,7 +5,8 @@ import ReactMarkdown from "react-markdown";
 
 interface Props {
   entry: JournalEntry;
-  onNewEntry: () => void;
+  isAuthenticated: boolean;
+  onSaveReflection: () => void;
   onViewJournal: () => void;
   onEntryUpdate: (entry: JournalEntry) => void;
 }
@@ -31,7 +32,7 @@ function splitResponseAndQuestion(response: string): { mainResponse: string; que
   return { mainResponse, question };
 }
 
-export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEntryUpdate }: Props) {
+export default function ResponseScreen({ entry, isAuthenticated, onSaveReflection, onViewJournal, onEntryUpdate }: Props) {
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -376,36 +377,40 @@ export default function ResponseScreen({ entry, onNewEntry, onViewJournal, onEnt
           </p>
         )}
 
-        {/* 7. BOTTOM ACTIONS */}
-        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <button
-            onClick={onNewEntry}
-            className="w-full py-3 font-body font-medium transition-all text-center"
-            style={{
-              background: '#2C1810',
-              color: '#FDF6F0',
-              borderRadius: '100px',
-              fontSize: '14px',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            Log another thought
-          </button>
-          <button
-            onClick={onViewJournal}
-            className="w-full font-body transition-colors text-center"
-            style={{
-              color: 'rgba(44, 24, 16, 0.45)',
-              fontSize: '12px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            View journal
-          </button>
-        </div>
+        {/* 7. COMPLETED-STATE ACTIONS */}
+        {entry.status === "completed" && (
+          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={isAuthenticated ? onViewJournal : onSaveReflection}
+              className="w-full py-3 font-body font-medium transition-all text-center"
+              style={{
+                background: '#2C1810',
+                color: '#FDF6F0',
+                borderRadius: '100px',
+                fontSize: '14px',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {isAuthenticated ? "View journal" : "Save your reflection"}
+            </button>
+            {!isAuthenticated && (
+              <button
+                onClick={onViewJournal}
+                className="w-full font-body transition-colors text-center"
+                style={{
+                  color: 'rgba(44, 24, 16, 0.45)',
+                  fontSize: '12px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                View journal
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <style>{`
