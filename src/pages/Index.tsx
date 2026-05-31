@@ -109,10 +109,6 @@ const Index = () => {
 
   const handleEntryUpdate = (updatedEntry: JournalEntry) => {
     setLastEntry(updatedEntry);
-
-    if (updatedEntry.status === "completed" && !user) {
-      setTimeout(() => setScreen("signup"), 2000);
-    }
   };
 
   const handleSignUpSuccess = (email: string) => {
@@ -212,7 +208,8 @@ const Index = () => {
         {screen === "response" && lastEntry && (
           <ResponseScreen
             entry={lastEntry}
-            onNewEntry={() => setScreen("home")}
+            isAuthenticated={Boolean(user)}
+            onSaveReflection={() => setScreen("signup")}
             onViewJournal={() => setScreen("journal")}
             onEntryUpdate={handleEntryUpdate}
           />
