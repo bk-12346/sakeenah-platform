@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSessionId } from "@/lib/session";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -21,27 +21,91 @@ interface Props {
 export default function JournalScreen({ onNavigateHome }: Props) {
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchEntries = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_session_entries" as never,
-        { p_session_id: getSessionId() } as never,
-      );
+  const fetchEntries = useCallback(async () => {
+    setLoading(true);
+    setError(false);
 
-      if (!error && data) {
-        setEntries(data as EntryRow[]);
-      }
+    const { data, error: fetchError } = await supabase.rpc(
+      "get_session_entries" as never,
+      { p_session_id: getSessionId() } as never,
+    );
+
+    if (fetchError) {
+      setEntries([]);
+      setError(true);
       setLoading(false);
-    };
-    fetchEntries();
+      return;
+    }
+
+    setEntries((data as EntryRow[] | null) ?? []);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    void fetchEntries();
+  }, [fetchEntries]);
 
   if (loading) {
     return (
       <div className="animate-fade-in text-center py-12 pt-[36px]">
         <p className="text-sm" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>Loading entries...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="animate-fade-in"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 200px)',
+          textAlign: 'center',
+        }}
+      >
+        <h2
+          className="font-display"
+          style={{
+            fontSize: '24px',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            color: '#2C1810',
+          }}
+        >
+          We could not load your reflections right now.
+        </h2>
+        <p
+          className="font-body"
+          style={{
+            fontSize: '13px',
+            color: 'rgba(44, 24, 16, 0.45)',
+            marginTop: '8px',
+          }}
+        >
+          Please try again.
+        </p>
+        <button
+          onClick={() => void fetchEntries()}
+          className="font-body"
+          style={{
+            background: '#2C1810',
+            color: '#FDF6F0',
+            fontSize: '13px',
+            padding: '12px 28px',
+            borderRadius: '100px',
+            marginTop: '24px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }
