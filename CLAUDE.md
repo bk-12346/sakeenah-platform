@@ -27,7 +27,7 @@ Do not migrate AI providers unless explicitly requested. Anthropic migration is 
 - `src/components/HomeScreen.tsx`: daily reflection input and emotion selection
 - `src/components/ResponseScreen.tsx`: AI response and follow-up conversation
 - `src/components/JournalScreen.tsx`: journal history read through an RPC
-- `src/components/Onboarding.tsx`: three-screen onboarding flow
+- `src/components/Onboarding.tsx`: single-screen onboarding trust and privacy introduction
 - `src/lib/session.ts`: anonymous browser session ID stored as `sakeenah_session_id`
 - `src/integrations/supabase/client.ts`: Supabase browser client
 - `src/integrations/supabase/types.ts`: generated Supabase types
@@ -138,14 +138,33 @@ Do not modify files under `src/components/ui/` unless explicitly requested.
 
 Supabase migrations and Edge Functions are deployed separately from the Vercel frontend. Do not apply migrations or deploy services unless explicitly authorized.
 
+## Resume Here
+
+The next work should ship as three small pull requests in this order:
+
+1. Ship the existing local journal retry state in `src/components/JournalScreen.tsx`.
+   - It is implemented locally but is not yet committed, merged, or deployed.
+   - Keep it separate from backend changes.
+2. Add deterministic crisis screening to `sakeena-reflect-v2`.
+   - Screen the latest user message before Gemini generation.
+   - For matched crisis language, skip Gemini and persist a standardized support response through the existing transactional RPC.
+   - Use accurate Naseeha helpline wording: free, anonymous, faith-informed support available 24/7 by call or text at `1-866-627-3342`.
+3. Add Memory v1.
+   - Memory is for authenticated users only.
+   - Retrieve at most the last three completed reflections.
+   - Pass only reflection date, entry text, and emotion labels into server-side Gemini context.
+   - Do not pass prior AI responses or conversation turns.
+   - Use remembered context subtly and only when relevant.
+   - Do not add embeddings or a vector database.
+
 ## Current Priorities
 
-1. Rewrite onboarding trust copy.
-2. Polish the completed-reflection experience.
-3. Add journal error handling and test responsive web behavior.
+1. Ship the existing journal retry state and complete responsive browser checks.
+2. Add deterministic pre-Gemini crisis screening.
+3. Add authenticated-only Memory v1 using at most the last three completed reflections.
 4. Measure retention manually and interview users.
-5. Add Memory v1 using the last one to three authenticated journal entries.
-6. Improve follow-up prompt quality from real feedback.
+5. Improve follow-up prompt quality from real feedback.
+6. Add active-reflection resume support.
 7. Redesign journal history around the user's journey.
 8. Add Ask Sakeenah over recent entries.
 9. Add weekly summaries if Memory v1 proves useful.

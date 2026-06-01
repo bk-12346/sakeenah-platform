@@ -1,73 +1,60 @@
-# Welcome to your Lovable project
+# Sakeenah
 
-## Project info
+Sakeenah is a private, faith-native reflection web app for Muslims of all ages and genders. Users write one intentional reflection per day, optionally select emotions, receive a Gemini-generated response rooted in tawakkul, and continue a short guided conversation.
 
-**URL**: https://sakeenah-journal.lovable.app
+Read these files before making changes:
 
-## How can I edit this code?
+- `CLAUDE.md`: product, architecture, rules, and current resume point
+- `AGENTS.md`: concise operating constraints for coding assistants
+- `docs/sakeenah-v1-revisions.html`: styled product roadmap and next releases
 
-There are several ways of editing your application.
+## Stack
 
-**Use Lovable**
+- React 18, TypeScript, and Vite
+- Tailwind CSS and shadcn/ui
+- Supabase Auth, Postgres, RLS, RPCs, and Edge Functions
+- Gemini through Supabase Edge Functions
+- GitHub and Vercel for frontend preview and production deployments
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Local Development
 
-Changes made via Lovable will be committed automatically to this repo.
+Install dependencies and start the Vite development server:
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```powershell
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Run verification before opening a pull request:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```powershell
+npm run build
+npm test
+npx eslint <edited-files>
+git diff --check
+```
 
-**Use GitHub Codespaces**
+For Supabase Edge Function changes, also run this when Deno is available:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```powershell
+deno check supabase/functions/<function-name>/index.ts
+```
 
-## What technologies are used for this project?
+## Deployment
 
-This project is built with:
+Frontend changes:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Push a feature branch to GitHub.
+2. Validate the Vercel Preview deployment.
+3. Merge the pull request into `main`.
+4. Validate the Vercel production deployment.
 
-## How can I deploy this project?
+Supabase migrations and Edge Functions are deployed separately from Vercel. Do not apply migrations or deploy services without explicit authorization.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Current Work
 
-## Can I connect a custom domain to my Lovable project?
+Start with the `Resume Here` section in `CLAUDE.md`. The next releases are:
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Ship the existing local journal retry state.
+2. Add deterministic crisis screening before Gemini generation.
+3. Add authenticated-only Memory v1 using at most the last three completed reflections.
