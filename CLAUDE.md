@@ -140,16 +140,14 @@ Supabase migrations and Edge Functions are deployed separately from the Vercel f
 
 ## Resume Here
 
-The next work should ship as three small pull requests in this order:
+The next work should continue as small pull requests in this order:
 
-1. Ship the existing local journal retry state in `src/components/JournalScreen.tsx`.
-   - It is implemented locally but is not yet committed, merged, or deployed.
-   - Keep it separate from backend changes.
-2. Add deterministic crisis screening to `sakeena-reflect-v2`.
+1. Shipped: journal retry state in `src/components/JournalScreen.tsx`.
+2. Current release: add deterministic crisis screening to `sakeena-reflect-v2`.
    - Screen the latest user message before Gemini generation.
    - For matched crisis language, skip Gemini and persist a standardized support response through the existing transactional RPC.
    - Use accurate Naseeha helpline wording: free, anonymous, faith-informed support available 24/7 by call or text at `1-866-627-3342`.
-3. Add Memory v1.
+3. Next release: add Memory v1.
    - Memory is for authenticated users only.
    - Retrieve at most the last three completed reflections.
    - Pass only reflection date, entry text, and emotion labels into server-side Gemini context.
@@ -159,9 +157,9 @@ The next work should ship as three small pull requests in this order:
 
 ## Current Priorities
 
-1. Ship the existing journal retry state and complete responsive browser checks.
-2. Add deterministic pre-Gemini crisis screening.
-3. Add authenticated-only Memory v1 using at most the last three completed reflections.
+1. Ship deterministic pre-Gemini crisis screening.
+2. Add authenticated-only Memory v1 using at most the last three completed reflections.
+3. Complete responsive browser checks.
 4. Measure retention manually and interview users.
 5. Improve follow-up prompt quality from real feedback.
 6. Add active-reflection resume support.

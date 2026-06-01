@@ -43,7 +43,7 @@ STRICT RULES
 - Never diagnose, prescribe, or make clinical assessments
 - Vary the attributes of Allah used across responses. Do not default to the same name repeatedly for the same emotion label.
 - Never repeat the same Quranic verse or Hadith across consecutive responses
-- If the entry contains any language suggesting self-harm, suicidal thoughts, or crisis, do not generate a standard response. Instead respond only with: "What you're carrying sounds very heavy. Please know you don't have to carry it alone. Reach out to Naseeha Mental Health at 1-866-NASEEHA (1-866-627-3342) — they offer free, confidential support from Muslim counsellors, available 24/7."
+- If the entry contains any language suggesting self-harm, suicidal thoughts, or crisis, do not generate a standard response. Instead respond only with: "What you're carrying sounds very heavy. Please do not carry it alone. Naseeha offers free, anonymous, faith-informed peer support 24/7. Call or text 1-866-627-3342 now."
 - Never fabricate Quranic verses or Hadith. If you are uncertain of a reference, use a general Islamic reflection instead.
 - Never discuss other religions, compare Islam to other faiths, or engage with theological debates
 - Stick to universally accepted Islamic principles across Sunni and Shia traditions — avoid anything sectarian or disputed
@@ -70,6 +70,10 @@ STRICT RULES:
 - Do not say goodbye or farewell — the closing message appears automatically after you`;
 
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
+
+const STANDARD_CRISIS_RESPONSE = "What you're carrying sounds very heavy. Please do not carry it alone. Naseeha offers free, anonymous, faith-informed peer support 24/7. Call or text 1-866-627-3342 now. If you can, reach out to someone you trust and stay with them while you connect with support.";
+
+const IMMEDIATE_DANGER_RESPONSE = `${STANDARD_CRISIS_RESPONSE} If you may act on these thoughts, have already taken steps to harm yourself, or are in immediate danger, contact your local emergency services now or go to the nearest emergency department.`;
 
 type IncomingMessage = {
   role?: string;
@@ -149,6 +153,45 @@ function extractGeminiText(data: GeminiResponse): string {
     .trim() ?? "";
 }
 
+function getCrisisResponse(message: string): string | null {
+  const normalizedMessage = message.toLowerCase().replace(/\s+/g, " ");
+  const hasExplicitCrisisLanguage = [
+    /\bkill myself\b/,
+    /\bend my life\b/,
+    /\btake my own life\b/,
+    /\bwant to die\b/,
+    /\bdo not want to live\b/,
+    /\bdon't want to live\b/,
+    /\bdont want to live\b/,
+    /\bhurt myself\b/,
+    /\bharm myself\b/,
+    /\bcut myself\b/,
+    /\bself[- ]harm\b/,
+    /\bsuicide\b/,
+    /\bsuicidal\b/,
+    /\boverdose(?:d)?\b/,
+    /\b(?:took|swallowed) (?:pills|an overdose)\b/,
+  ].some((pattern) => pattern.test(normalizedMessage));
+
+  if (!hasExplicitCrisisLanguage) {
+    return null;
+  }
+
+  const indicatesImmediateDanger = [
+    /\bright now\b/,
+    /\btonight\b/,
+    /\babout to\b/,
+    /\bgoing to\b/,
+    /\bplanning to\b/,
+    /\bplan to\b/,
+    /\balready (?:cut|hurt|harmed) myself\b/,
+    /\b(?:took|swallowed) (?:pills|an overdose)\b/,
+    /\boverdosed\b/,
+  ].some((pattern) => pattern.test(normalizedMessage));
+
+  return indicatesImmediateDanger ? IMMEDIATE_DANGER_RESPONSE : STANDARD_CRISIS_RESPONSE;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -214,9 +257,6 @@ serve(async (req) => {
       throw new Error("Missing entry ID");
     }
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
-
     // Select system prompt based on turn number
     let systemPrompt: string;
     if (normalizedTurnNumber === 1) {
@@ -241,6 +281,38 @@ serve(async (req) => {
       throw new Error("Missing user message");
     }
 
+    const crisisResponse = getCrisisResponse(latestUserMessage);
+    if (crisisResponse) {
+      const updatedMessages = [...messages, { role: "assistant", content: crisisResponse }];
+      const { data: persistedEntryId, error: persistError } = await supabase.rpc(
+        "persist_reflection_exchange",
+        {
+          p_session_id: sessionId,
+          p_entry_id: normalizedEntryId,
+          p_entry_text: normalizedTurnNumber === 1 ? (entryText as string).trim() : latestUserMessage,
+          p_emotion_labels: normalizedTurnNumber === 1 ? emotionLabels : [],
+          p_ai_response: crisisResponse,
+          p_messages: updatedMessages,
+          p_turn_number: normalizedTurnNumber,
+        },
+      );
+
+      if (persistError) {
+        console.error("Unable to persist crisis-support exchange:", persistError);
+        return new Response(JSON.stringify({
+          response: crisisResponse,
+          entryId: normalizedEntryId,
+          safetyOnly: true,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ response: crisisResponse, entryId: persistedEntryId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (normalizedTurnNumber === 1) {
       const { data: canStart, error: canStartError } = await supabase.rpc(
         "can_start_daily_reflection",
@@ -256,6 +328,9 @@ serve(async (req) => {
         });
       }
     }
+
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
