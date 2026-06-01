@@ -201,17 +201,17 @@
     <section class="section">
       <h2>Resume here</h2>
       <article class="card">
-        <span class="pill">Next release</span>
-        <h3>PR 1: ship journal retry handling</h3>
-        <p>The journal retry state is implemented locally but is not yet committed, merged, or deployed. Ship it separately and complete responsive browser checks.</p>
+        <span class="pill done">Shipped</span>
+        <h3>PR 1: journal retry handling</h3>
+        <p>The journal now shows an explicit retry state when a read fails, so a temporary network or service error does not look like lost reflections.</p>
       </article>
       <article class="card">
-        <span class="pill">Safety prerequisite</span>
+        <span class="pill">Current release</span>
         <h3>PR 2: deterministic crisis screening</h3>
         <p>Screen the latest user message before Gemini generation. For matched crisis language, skip Gemini and persist a standardized support response through the existing transactional RPC. Use accurate Naseeha wording: free, anonymous, faith-informed support available 24/7 by call or text at 1-866-627-3342.</p>
       </article>
       <article class="card">
-        <span class="pill">Core feature</span>
+        <span class="pill">Next release</span>
         <h3>PR 3: Memory v1</h3>
         <p>For signed-in users only, pass at most the last three completed reflections into the initial Gemini context. Include the date, entry text, and emotion labels only. Use memory subtly when relevant. Exclude prior AI responses and conversation turns. Do not add embeddings or a vector database.</p>
       </article>
@@ -224,7 +224,7 @@
           <li><strong>Shipped:</strong> rewrite onboarding copy so it clearly explains the private daily reflection model.</li>
           <li><strong>Shipped:</strong> replace absolute privacy claims with technically accurate wording.</li>
           <li><strong>Shipped:</strong> polish the completion state so the user is guided toward the journal rather than a rejected second entry.</li>
-          <li><strong>Implemented locally:</strong> add an explicit journal error state so failed reads do not look like data loss.</li>
+          <li><strong>Shipped:</strong> add an explicit journal error state so failed reads do not look like data loss.</li>
           <li>Test the responsive web app in mobile browsers, especially with the keyboard open.</li>
           <li>Add deterministic crisis screening before AI generation as a safety hardening step.</li>
         </ol>

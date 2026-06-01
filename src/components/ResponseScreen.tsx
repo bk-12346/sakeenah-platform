@@ -36,6 +36,7 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [safetyResponse, setSafetyResponse] = useState("");
 
   const { mainResponse, question } = splitResponseAndQuestion(entry.response);
 
@@ -47,6 +48,7 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
     if (!replyText.trim() || loading || entry.status === "completed") return;
     setLoading(true);
     setError("");
+    setSafetyResponse("");
 
     try {
       const newUserMessage: ConversationMessage = { role: "user", content: replyText.trim() };
@@ -61,6 +63,11 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
       if (fnError) throw fnError;
 
       const responseText = data?.response || data?.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
+
+      if (data?.safetyOnly) {
+        setSafetyResponse(responseText);
+        return;
+      }
 
       const aiResponse: ConversationMessage = { role: "assistant", content: responseText };
       const finalMessages = [...updatedMessages, aiResponse];
@@ -357,6 +364,23 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
             </p>
             {error && (
               <p className="text-xs mt-2 text-center" style={{ color: '#A85E56' }}>{error}</p>
+            )}
+            {safetyResponse && (
+              <div
+                className="font-body mt-4"
+                style={{
+                  background: '#FFFAF7',
+                  border: '1px solid #E8D5C8',
+                  borderLeft: '3px solid #A85E56',
+                  borderRadius: '12px',
+                  color: '#2C1810',
+                  fontSize: '13px',
+                  lineHeight: '1.75',
+                  padding: '16px',
+                }}
+              >
+                {safetyResponse}
+              </div>
             )}
           </div>
         )}

@@ -55,6 +55,6 @@ Supabase migrations and Edge Functions are deployed separately from Vercel. Do n
 
 Start with the `Resume Here` section in `CLAUDE.md`. The next releases are:
 
-1. Ship the existing local journal retry state.
-2. Add deterministic crisis screening before Gemini generation.
-3. Add authenticated-only Memory v1 using at most the last three completed reflections.
+1. Current release: add deterministic crisis screening before Gemini generation.
+2. Next release: add authenticated-only Memory v1 using at most the last three completed reflections.
+3. Complete responsive browser checks and retention measurement.

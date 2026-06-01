@@ -36,6 +36,7 @@ export default function HomeScreen({ onResponse }: Props) {
   const [emotions, setEmotions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [safetyResponse, setSafetyResponse] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
   const toggleEmotion = (e: string) => {
@@ -46,6 +47,7 @@ export default function HomeScreen({ onResponse }: Props) {
     if (!thought.trim() || loading) return;
     setLoading(true);
     setError("");
+    setSafetyResponse("");
 
     try {
       const userMessage = `Journal entry: ${thought.trim()}\n\nEmotion labels: ${emotions.length ? emotions.join(", ") : "None provided"}`;
@@ -72,6 +74,11 @@ export default function HomeScreen({ onResponse }: Props) {
       }
 
       const responseText = data?.response || data?.choices?.[0]?.message?.content || "Something went wrong. Please try again.";
+
+      if (data?.safetyOnly) {
+        setSafetyResponse(responseText);
+        return;
+      }
 
       if (!data?.entryId) throw new Error("Missing entry ID");
 
@@ -173,6 +180,23 @@ export default function HomeScreen({ onResponse }: Props) {
       </button>
 
       {error && <p className="text-xs mt-2 text-center" style={{ color: '#A85E56' }}>{error}</p>}
+      {safetyResponse && (
+        <div
+          className="font-body mt-4"
+          style={{
+            background: '#FFFAF7',
+            border: '1px solid #E8D5C8',
+            borderLeft: '3px solid #A85E56',
+            borderRadius: '12px',
+            color: '#2C1810',
+            fontSize: '13px',
+            lineHeight: '1.75',
+            padding: '16px',
+          }}
+        >
+          {safetyResponse}
+        </div>
+      )}
     </div>
   );
 }
