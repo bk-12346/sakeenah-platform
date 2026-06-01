@@ -1,6 +1,7 @@
 # Sakeenah Agent Instructions
 
 Read `CLAUDE.md` before editing. It is the detailed product and architecture source of truth.
+When resuming work, start with its `Resume Here` section.
 
 ## Operating Rules
 
@@ -13,6 +14,8 @@ Read `CLAUDE.md` before editing. It is the detailed product and architecture sou
 - Use `"completed"`, never `"complete"`.
 - For each exchange, insert one user row and one assistant row with the same `turn_number`.
 - Preserve the maximum of four exchanges.
+- Keep Memory v1 server-side, authenticated-only, and bounded to at most three completed reflections.
+- Do not add embeddings or a vector database for Memory v1.
 - Never manually edit generated Supabase types. Regenerate them after database changes.
 - Never print `.env` values, API keys, JWTs, or secrets.
 - Do not apply migrations, deploy services, or push commits unless explicitly authorized.
@@ -22,7 +25,7 @@ Read `CLAUDE.md` before editing. It is the detailed product and architecture sou
 - This is an emotionally sensitive faith-native product for Muslims of all ages and genders.
 - Do not claim Sakeenah is therapy or a replacement for professional support.
 - Never fabricate Quranic verses or Hadith.
-- Preserve crisis-support behavior.
+- Preserve crisis-support behavior. Screen deterministic crisis phrases before Gemini generation and persist the standardized support response through the existing transactional RPC.
 - Avoid gamification that creates guilt, pressure, or anxiety.
 - Use technically accurate privacy language.
 
@@ -49,4 +52,3 @@ For Edge Function changes, also run when Deno is available:
 ```powershell
 deno check supabase/functions/<function-name>/index.ts
 ```
-
