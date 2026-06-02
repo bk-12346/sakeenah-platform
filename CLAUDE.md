@@ -68,6 +68,7 @@ Current RPCs:
 - `set_request_session(session_id text)`
 - `can_start_daily_reflection(p_session_id text)`
 - `get_session_entries(p_session_id text)`
+- `get_recent_completed_reflections(p_limit integer)`
 - `persist_reflection_exchange(...)`
 - `claim_anonymous_session(p_session_id text)`
 
@@ -143,11 +144,11 @@ Supabase migrations and Edge Functions are deployed separately from the Vercel f
 The next work should continue as small pull requests in this order:
 
 1. Shipped: journal retry state in `src/components/JournalScreen.tsx`.
-2. Current release: add deterministic crisis screening to `sakeena-reflect-v2`.
+2. Shipped: deterministic crisis screening in `sakeena-reflect-v2`.
    - Screen the latest user message before Gemini generation.
    - For matched crisis language, skip Gemini and persist a standardized support response through the existing transactional RPC.
    - Use accurate Naseeha helpline wording: free, anonymous, faith-informed support available 24/7 by call or text at `1-866-627-3342`.
-3. Next release: add Memory v1.
+3. Current release: add Memory v1.
    - Memory is for authenticated users only.
    - Retrieve at most the last three completed reflections.
    - Pass only reflection date, entry text, and emotion labels into server-side Gemini context.
@@ -157,16 +158,15 @@ The next work should continue as small pull requests in this order:
 
 ## Current Priorities
 
-1. Ship deterministic pre-Gemini crisis screening.
-2. Add authenticated-only Memory v1 using at most the last three completed reflections.
-3. Complete responsive browser checks.
-4. Measure retention manually and interview users.
-5. Improve follow-up prompt quality from real feedback.
-6. Add active-reflection resume support.
-7. Redesign journal history around the user's journey.
-8. Add Ask Sakeenah over recent entries.
-9. Add weekly summaries if Memory v1 proves useful.
-10. Test soft paywall copy before integrating payments.
+1. Ship authenticated-only Memory v1 using at most the last three completed reflections.
+2. Complete responsive browser checks.
+3. Measure retention manually and interview users.
+4. Improve follow-up prompt quality from real feedback.
+5. Add active-reflection resume support.
+6. Redesign journal history around the user's journey.
+7. Add Ask Sakeenah over recent entries.
+8. Add weekly summaries if Memory v1 proves useful.
+9. Test soft paywall copy before integrating payments.
 
 ## Deferred Features
 

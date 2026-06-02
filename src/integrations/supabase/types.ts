@@ -178,6 +178,14 @@ export type Database = {
           usage_claimed: number
         }[]
       }
+      get_recent_completed_reflections: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          emotion_labels: string[]
+          entry_text: string
+        }[]
+      }
       get_session_entries: {
         Args: { p_session_id: string }
         Returns: {
