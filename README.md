@@ -77,6 +77,19 @@ Database (User + Journal Storage)
 
 ---
 
+## 🔄 Core System Flows  
+
+### Reflection Flow  
+HomeScreen → Reflection Engine → LLM → Memory Update → Database  
+
+### Authentication Flow  
+Anonymous Session → Supabase Auth → Session Claim  
+
+### Journal Retrieval  
+JournalScreen → Supabase RPC → Historical Entries  
+
+---
+
 ## 🧠 Memory System  
 
 Sakeenah implements a **multi-level memory design**:
