@@ -1,0 +1,24 @@
+# Reflection Prompt — Placeholder Reference
+#
+# This file documents the turn-1 structured reflection prompt regime.
+#
+# Canonical source:
+#   supabase/functions/sakeena-reflect-v2/index.ts  →  SYSTEM_PROMPT
+#
+# Purpose:
+#   Generate the initial AI response to a user's daily journal entry.
+#
+# Key constraints (enforced via system instruction):
+#   - 100–150 word response length
+#   - Five-part structure: acknowledge → Allah's attribute → tawakkul reframe
+#     → one Quranic verse / Hadith / du'a → reflection question or encouragement
+#   - Emotion-label-aware attribute selection
+#   - No clinical claims; no fabricated Islamic references
+#   - Off-topic entries receive a fixed redirect message
+#
+# User message format (from frontend):
+#   "Journal entry: <text>\n\nEmotion labels: <labels or 'None provided'>"
+#
+# See also: ai/reflection_pipeline.md
+
+[PROMPT CONTENT NOT DUPLICATED HERE — see canonical source above]

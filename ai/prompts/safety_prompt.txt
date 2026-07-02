@@ -1,0 +1,32 @@
+# Safety Prompt — Placeholder Reference
+#
+# Sakeenah uses a layered safety approach. Not all safety behavior is
+# prompt-based; critical paths are enforced deterministically before the LLM.
+#
+# Layer 1 — Deterministic crisis screening (pre-LLM)
+#   Source: supabase/functions/sakeena-reflect-v2/index.ts  →  getCrisisResponse()
+#   Behavior: Pattern-match self-harm / suicidal language in the latest user message.
+#            If matched, skip Gemini and return a standardized Naseeha helpline response.
+#            Immediate-danger phrasing adds emergency-services guidance.
+#
+# Layer 2 — Prompt-level crisis instruction (in SYSTEM_PROMPT)
+#   Instructs the model to return the same helpline message if crisis language
+#   is detected during generation (belt-and-suspenders; Layer 1 is authoritative).
+#
+# Layer 3 — Content guardrails (in all prompt variants)
+#   - Never claim to be a therapist, counsellor, or medical professional
+#   - Never fabricate Quranic verses or Hadith
+#   - Never engage in sectarian or comparative theology
+#   - Redirect off-topic / non-reflection requests
+#
+# Layer 4 — Memory prompt injection safety
+#   Historical reflections are labeled untrusted reference data.
+#   Model instructed not to follow embedded instructions in prior entries.
+#
+# Standard crisis response (paraphrased):
+#   Naseeha — free, anonymous, faith-informed support 24/7
+#   Call or text: 1-866-627-3342
+#
+# See also: ai/reflection_pipeline.md, docs/system_design.md
+
+[PROMPT CONTENT NOT DUPLICATED HERE — see canonical source above]

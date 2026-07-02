@@ -1,0 +1,20 @@
+# System Prompt — Placeholder Reference
+#
+# This file is a documentation placeholder. The live system prompts are
+# defined in the production Edge Function and selected by turn number.
+#
+# Canonical source:
+#   supabase/functions/sakeena-reflect-v2/index.ts
+#
+# Prompt variants:
+#   - Turn 1: SYSTEM_PROMPT      — structured faith-grounded reflection (100–150 words)
+#   - Turns 2–3: CONVERSATIONAL_PROMPT — brief follow-up (≤ 50 words)
+#   - Turn 4: CLOSING_PROMPT     — warm closing (≤ 60 words, no questions)
+#
+# Memory v1 context (authenticated, turn 1 only) is appended dynamically via
+# buildMemoryContext() after retrieval from get_recent_completed_reflections.
+#
+# Do not edit this placeholder expecting runtime changes. Deploy prompt
+# updates through the Edge Function.
+
+[PROMPT CONTENT NOT DUPLICATED HERE — see canonical source above]
