@@ -1,60 +1,192 @@
-# Sakeenah
+# Sakeenah  
 
-Sakeenah is a private, faith-native reflection web app for Muslims of all ages and genders. Users write one intentional reflection per day, optionally select emotions, receive a Gemini-generated response rooted in tawakkul, and continue a short guided conversation.
+**AI-Assisted Reflection Platform**  
+Designed for intentional journaling, not engagement optimization  
 
-Read these files before making changes:
+🌐 Live: https://sakeenah-journal.vercel.app/  
+👥 20+ active users  
 
-- `CLAUDE.md`: product, architecture, rules, and current resume point
-- `AGENTS.md`: concise operating constraints for coding assistants
-- `docs/sakeenah-v1-revisions.html`: styled product roadmap and next releases
+---
 
-## Stack
+## 🧠 Overview  
 
-- React 18, TypeScript, and Vite
-- Tailwind CSS and shadcn/ui
-- Supabase Auth, Postgres, RLS, RPCs, and Edge Functions
-- Gemini through Supabase Edge Functions
-- GitHub and Vercel for frontend preview and production deployments
+Sakeenah is a conversational AI system designed to support structured self-reflection.  
 
-## Local Development
+Unlike traditional AI assistants that optimize for longer interactions, Sakeenah is intentionally constrained—encouraging users to pause, reflect, and disengage after meaningful interaction.  
 
-Install dependencies and start the Vite development server:
+The system combines **LLM orchestration, contextual memory, and behavioral constraints** to guide journaling in a focused and emotionally aware manner.
 
-```powershell
-npm install
-npm run dev
-```
+A key aspect of the system is its inspiration from **Tawakkul (trust and reliance)** and reflective themes derived from the **Names of Allah**, which inform the tone, structure, and intent of responses. This allows the system to provide **grounded, calming, and values-driven reflections** rather than generic AI-generated text.
 
-Run verification before opening a pull request:
+---
 
-```powershell
-npm run build
-npm test
-npx eslint <edited-files>
-git diff --check
-```
+## 🎯 Design Philosophy  
 
-For Supabase Edge Function changes, also run this when Deno is available:
+Most AI systems are optimized for:
+- longer conversations  
+- higher engagement  
+- more usage  
 
-```powershell
-deno check supabase/functions/<function-name>/index.ts
-```
+Sakeenah is built around a different principle:
 
-## Deployment
+> **Reflection over engagement.**
 
-Frontend changes:
+Key design decisions:
+- One structured reflection per day  
+- Limited conversational depth (bounded interaction loops)  
+- Context-aware responses instead of open-ended chat  
+- Privacy-first data handling  
 
-1. Push a feature branch to GitHub.
-2. Validate the Vercel Preview deployment.
-3. Merge the pull request into `main`.
-4. Validate the Vercel production deployment.
+---
 
-Supabase migrations and Edge Functions are deployed separately from Vercel. Do not apply migrations or deploy services without explicit authorization.
+## ⚙️ System Architecture  
 
-## Current Work
+Frontend (React / Next.js)
 
-Start with the `Resume Here` section in `CLAUDE.md`. The next releases are:
+↓
 
-1. Current release: add authenticated-only Memory v1 using at most the last three completed reflections.
-2. Complete responsive browser checks and retention measurement.
-3. Improve follow-up prompt quality from real feedback.
+API Layer (FastAPI)
+
+↓
+
+LLM Orchestration Layer
+
+↓
+
+Prompt Pipeline + Constraints
+
+↓
+
+Memory System (Session + Historical)
+
+↓
+
+Database (User + Journal Storage)
+
+---
+
+## 🔑 Core Features  
+
+- 📝 Guided journaling workflow  
+- 🤖 Emotion-aware conversational responses  
+- 🧠 Context-aware memory across sessions  
+- 🔐 Authentication + anonymous → account migration  
+- 📚 Persistent journal history  
+- ⚠️ Safety-aware response handling for sensitive inputs  
+- 🔁 Bounded interaction design (prevents infinite chat loops)  
+
+---
+
+## 🧠 Memory System  
+
+Sakeenah implements a **multi-level memory design**:
+
+### 1. Session Memory  
+- Maintains context within a single journaling session  
+- Enables coherent multi-turn interaction  
+
+### 2. Historical Memory  
+- Stores past journal entries  
+- Provides continuity across sessions  
+
+### 3. Emerging Feature — Reflective Memory (In Progress 🚧)  
+- Aggregates journaling patterns over time (e.g., weekly trends)  
+- Generates **contextual reflective insights**, such as:  
+  > “I noticed you’ve been feeling anxious this week...”  
+- Combines pattern recognition with structured response generation  
+- Designed to integrate **emotional awareness + faith-based reassurance (Tawakkul-inspired responses)**  
+
+→ This moves the system toward **longitudinal user understanding rather than isolated interactions**  
+
+---
+
+## 🧩 LLM Pipeline  
+
+The system is not a simple chatbot wrapper. It includes:
+
+- Structured prompting layers  
+- Context injection (session + history)  
+- Response constraints (tone, intent, safety)  
+- Controlled generation flow (bounded outputs)  
+
+---
+
+## ⚠️ Safety & Behavioral Constraints  
+
+Sakeenah incorporates guardrails for sensitive interactions:
+
+- Emotion-aware response shaping  
+- Avoidance of harmful or escalating outputs  
+- Encouragement of reflection rather than dependency  
+- Controlled conversation limits  
+
+---
+
+## 🏗️ Engineering Challenges  
+
+Key challenges addressed during development:
+
+- Designing **bounded AI conversations** instead of infinite chat  
+- Managing **contextual memory while preserving privacy**  
+- Preventing **prompt drift across multiple turns**  
+- Handling **emotionally sensitive inputs safely**  
+- Building **stateful interactions over stateless LLM APIs**  
+- Supporting **anonymous → authenticated user transitions**  
+
+---
+
+## 🛠️ Tech Stack  
+
+**ML / AI:**  
+LLMs, Prompt Engineering, RAG concepts  
+
+**Backend:**  
+FastAPI, Python  
+
+**Frontend:**  
+Next.js / React  
+
+**Database & Auth:**  
+Supabase, PostgreSQL  
+
+**Infrastructure:**  
+Vercel, Cloud APIs  
+
+**Data Handling:**  
+Session memory, journal persistence, structured storage  
+
+---
+
+## 🚀 Future Work  
+
+- Semantic retrieval across journal history  
+- Long-term memory summarization  
+- Personalized reflection generation  
+- Mood trend analysis  
+- Embedding-based memory retrieval  
+- Advanced safety evaluation pipelines  
+
+---
+
+## 🎯 Why This Project  
+
+Sakeenah was built to explore a different paradigm for AI systems:  
+
+> Systems that help users **stop**, rather than continue.  
+
+It reflects a shift from:
+- engagement-driven AI  
+to  
+- **intention-driven AI systems**
+
+---
+
+## 👤 Author  
+
+**Bakhtawar Iftikhar**  
+Founder & Machine Learning Engineer  
+
+- LinkedIn: https://www.linkedin.com/in/bakhtawar-iftikhar/  
+- Portfolio: https://bakhtawar-iftikhar.base44.app/
+
+---
