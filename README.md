@@ -90,6 +90,16 @@ JournalScreen → Supabase RPC → Historical Entries
 
 ---
 
+## 📸 Product Walkthrough  
+
+### Home & Reflection Input  
+![Home](docs/screenshots/home.png)
+
+### AI-Assisted Reflection  
+![AI Response](docs/screenshots/ai-response.png)
+
+--- 
+
 ## 🧠 Memory System  
 
 Sakeenah implements a **multi-level memory design**:
